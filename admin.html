@@ -163,6 +163,10 @@
               <button id="tab-btn-scanner" class="admin-tab-btn">
                 <span>📷</span> <span>Gate QR Scanner</span>
               </button>
+              <button id="tab-btn-checkin" class="admin-tab-btn">
+                <span>✅</span> <span>Check-In Log</span>
+                <span id="checkin-count-badge" class="badge badge-success" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;">0</span>
+              </button>
             </div>
           </div>
 
@@ -312,6 +316,48 @@
               <!-- Real-time Scan Result Card -->
               <div id="scan-result-card" style="display: none; margin-top: 1.75rem; padding: 1.5rem; border-radius: 14px; text-align: left;">
                 <!-- Filled dynamically via admin.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================= -->
+          <!-- TAB 4: CHECK-IN LOG (Scanned Passes at Gate)            -->
+          <!-- ======================================================= -->
+          <div id="tab-content-checkin" style="display: none;">
+            <div class="card" style="padding: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                  <h2 style="font-size: 1.35rem; margin-bottom: 0.2rem;">🎟️ Venue Check-In Log</h2>
+                  <p style="color: var(--text-muted); font-size: 0.85rem;">Real-time list of students who have successfully scanned their pass and entered the venue.</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <span id="checkin-total-count" style="font-size: 0.85rem; color: var(--text-muted);">Total Entered: <strong style="color: var(--success);">0</strong></span>
+                  <button id="refresh-checkin-btn" class="btn btn-ghost btn-sm">🔄 Refresh</button>
+                </div>
+              </div>
+
+              <!-- Check-In Table -->
+              <div class="table-container">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Student</th>
+                      <th>Email</th>
+                      <th>Mobile</th>
+                      <th>Gender</th>
+                      <th>Pass Code</th>
+                      <th>UTR / Transaction</th>
+                      <th>Entry Time</th>
+                      <th>Scanned By</th>
+                    </tr>
+                  </thead>
+                  <tbody id="checkin-table-body">
+                    <tr>
+                      <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading check-in records...</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 3. LOAD DATA
   await loadAdminData();
+  await loadCheckInLog();
 
   // 4. SETUP CSV EXPORT & SEARCH
   setupSearchAndExport();
@@ -63,14 +64,19 @@ function setupTabs() {
   const btnUsers = document.getElementById("tab-btn-users");
   const btnPayments = document.getElementById("tab-btn-payments");
   const btnScanner = document.getElementById("tab-btn-scanner");
+  const btnCheckin = document.getElementById("tab-btn-checkin");
 
   const tabUsers = document.getElementById("tab-content-users");
   const tabPayments = document.getElementById("tab-content-payments");
   const tabScanner = document.getElementById("tab-content-scanner");
+  const tabCheckin = document.getElementById("tab-content-checkin");
+
+  const allBtns = [btnUsers, btnPayments, btnScanner, btnCheckin];
+  const allTabs = [tabUsers, tabPayments, tabScanner, tabCheckin];
 
   function activateTab(activeBtn, activeContent) {
-    [btnUsers, btnPayments, btnScanner].forEach(b => b.classList.remove("active"));
-    [tabUsers, tabPayments, tabScanner].forEach(c => c.style.display = "none");
+    allBtns.forEach(b => b.classList.remove("active"));
+    allTabs.forEach(c => c.style.display = "none");
 
     activeBtn.classList.add("active");
     activeContent.style.display = "block";
@@ -79,11 +85,17 @@ function setupTabs() {
     if (activeBtn !== btnScanner && isScanning && html5QrCodeScanner) {
       stopCameraScanner();
     }
+
+    // Refresh check-in log when switching to it
+    if (activeBtn === btnCheckin) {
+      loadCheckInLog();
+    }
   }
 
   btnUsers.addEventListener("click", () => activateTab(btnUsers, tabUsers));
   btnPayments.addEventListener("click", () => activateTab(btnPayments, tabPayments));
   btnScanner.addEventListener("click", () => activateTab(btnScanner, tabScanner));
+  btnCheckin.addEventListener("click", () => activateTab(btnCheckin, tabCheckin));
 
   document.getElementById("refresh-payments-btn").addEventListener("click", loadAdminData);
 }
@@ -128,9 +140,106 @@ async function loadAdminData() {
     renderUsersTable(allUsersData);
     renderPaymentsTable(allPaymentsData, profiles || []);
 
+    // Also update check-in badge count from passes
+    const scannedCount = (passes || []).filter(p => p.is_used).length;
+    const badge = document.getElementById("checkin-count-badge");
+    if (badge) badge.textContent = scannedCount;
+
   } catch (err) {
     console.error("Admin data load error:", err);
   }
+}
+
+// ============================================
+// CHECK-IN LOG: Load Scanned Passes from DB
+// ============================================
+async function loadCheckInLog() {
+  const supabase = getSupabase();
+  const tbody = document.getElementById("checkin-table-body");
+  const totalEl = document.getElementById("checkin-total-count");
+  const badge = document.getElementById("checkin-count-badge");
+
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading check-in records...</td></tr>`;
+
+  try {
+    const { data: scannedPasses, error } = await supabase
+      .from("passes")
+      .select("*, profiles(*), payments(utr_number)")
+      .eq("is_used", true)
+      .order("scanned_at", { ascending: false });
+
+    if (error) throw error;
+
+    const count = (scannedPasses || []).length;
+    if (badge) badge.textContent = count;
+    if (totalEl) totalEl.innerHTML = `Total Entered: <strong style="color: var(--success);">${count}</strong>`;
+
+    renderCheckInTable(scannedPasses || []);
+
+    // Hook refresh button
+    const refreshBtn = document.getElementById("refresh-checkin-btn");
+    if (refreshBtn && !refreshBtn._bound) {
+      refreshBtn._bound = true;
+      refreshBtn.addEventListener("click", loadCheckInLog);
+    }
+
+  } catch (err) {
+    console.error("Check-in log error:", err);
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--error);">Error loading check-in data: ${err.message}</td></tr>`;
+  }
+}
+
+function renderCheckInTable(entries) {
+  const tbody = document.getElementById("checkin-table-body");
+  if (!tbody) return;
+
+  if (entries.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" style="text-align: center; padding: 3rem; color: var(--text-dim);">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎟️</div>
+          <div>No students have checked in yet.</div>
+          <div style="font-size: 0.8rem; margin-top: 0.3rem;">Scanned passes will appear here in real-time.</div>
+        </td>
+      </tr>`;
+    return;
+  }
+
+  tbody.innerHTML = entries.map((entry, i) => {
+    const student = entry.profiles || {};
+    const payment = entry.payments || {};
+    const scannedTime = entry.scanned_at
+      ? new Date(entry.scanned_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'medium' })
+      : '--';
+    const avatarSrc = student.avatar_url || 'assets/avatars/av1.svg';
+    const scannedBy = entry.scanned_by || CONFIG.ADMIN_EMAIL || '--';
+
+    return `
+      <tr>
+        <td style="font-weight: 800; color: var(--success);">${i + 1}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <img src="${avatarSrc}" alt="Avatar" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success);">
+            <div>
+              <div style="font-weight: 700; color: var(--text-main);">${student.full_name || 'Unknown'}</div>
+              <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: capitalize;">${student.gender || ''}</div>
+            </div>
+          </div>
+        </td>
+        <td style="color: var(--text-main); font-size: 0.83rem;">${student.email || '--'}</td>
+        <td>${student.mobile ? '+91 ' + student.mobile : '--'}</td>
+        <td style="text-transform: capitalize; color: var(--text-muted);">${student.gender || '--'}</td>
+        <td><span class="font-mono" style="color: var(--cyan); font-weight: 700;">${entry.pass_code || '--'}</span></td>
+        <td><span class="font-mono" style="color: var(--gold); font-weight: 700;">${payment.utr_number || '--'}</span></td>
+        <td>
+          <div style="font-weight: 700; color: var(--success);">${scannedTime}</div>
+          <div style="font-size: 0.7rem; color: var(--text-dim);">✅ Entered Venue</div>
+        </td>
+        <td style="font-size: 0.78rem; color: var(--text-dim);">${scannedBy}</td>
+      </tr>
+    `;
+  }).join("");
 }
 
 // Update KPI Stats Counters
@@ -684,8 +793,12 @@ async function onQrCodeSuccess(decodedText) {
       })
       .eq("id", pass.id);
 
+    // Auto-refresh the check-in log badge count and table
+    loadCheckInLog();
+
     resultCard.style.background = "rgba(16, 185, 129, 0.15)";
     resultCard.style.border = "2px solid var(--success)";
+    const entryTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     resultCard.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
         <span class="badge badge-success" style="font-size: 0.8rem;">✓ ACCESS GRANTED</span>
@@ -695,10 +808,19 @@ async function onQrCodeSuccess(decodedText) {
       <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
         <img src="${student.avatar_url || 'assets/avatars/av1.svg'}" alt="Avatar" style="width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success);">
         <div>
-          <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">${student.full_name || "Student"}</div>
-          <div style="font-size: 0.82rem; color: var(--text-muted);">${student.email} • +91 ${student.mobile || payment.payment_mobile || ""}</div>
-          <div style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">UTR: ${payment.utr_number || "--"}</div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">${student.full_name || 'Student'}</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted);">${student.email} • +91 ${student.mobile || payment.payment_mobile || ''}</div>
+          <div style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">UTR: ${payment.utr_number || '--'}</div>
         </div>
+      </div>
+
+      <div style="background: var(--bg-surface); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+        <span style="color: var(--text-muted);">Gender:</span>
+        <span style="color: var(--text-main); text-transform: capitalize; font-weight: 600;">${student.gender || '--'}</span>
+      </div>
+      <div style="background: var(--bg-surface); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+        <span style="color: var(--text-muted);">Entry Time:</span>
+        <span style="color: var(--success); font-weight: 700;">🕐 ${entryTime}</span>
       </div>
 
       <div style="background: var(--bg-surface); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; color: var(--success); text-align: center; font-weight: 700;">

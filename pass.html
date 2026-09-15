@@ -14,8 +14,6 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <!-- html2canvas for PNG download -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- jsPDF for PDF download -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     /* Print-specific styling */
@@ -94,17 +92,14 @@
         <!-- ============================================== -->
         <div id="pass-content-wrapper" style="display: none;">
           
-          <!-- Card Action Buttons (Download/Print) -->
+          <!-- Card Action Buttons -->
           <div class="no-print" style="display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap;">
             <span style="font-size: 0.85rem; color: var(--text-muted);">
-              ✅ Keep this pass on your phone or print it for entry gate scan.
+              ✅ Keep this pass on your phone — show QR at entry gate for scan.
             </span>
             <div style="display: flex; gap: 0.5rem;">
-              <button id="download-png-btn" class="btn btn-secondary btn-sm">
+              <button id="download-png-btn" class="btn btn-primary btn-sm">
                 <span>🖼️ Save as Image</span>
-              </button>
-              <button id="download-pdf-btn" class="btn btn-primary btn-sm">
-                <span>📄 Download PDF</span>
               </button>
             </div>
           </div>
