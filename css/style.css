@@ -891,22 +891,291 @@ h1, h2, h3, h4, .font-heading {
   font-size: 0.8rem;
 }
 
+/* --- RESPONSIVE UTILITIES & GRIDS --- */
+.payment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+  align-items: center;
+}
+
+.pass-student-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+.pass-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  margin-top: 0.4rem;
+}
+
+.admin-tabs-nav {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--bg-surface);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border-glass);
+}
+
+.admin-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.key-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+}
+
 /* --- RESPONSIVE BREAKPOINTS --- */
-@media (max-width: 900px) {
+
+/* Tablets & Small Laptops (max-width: 992px) */
+@media (max-width: 992px) {
   .footer-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
+  }
+  .admin-table th, .admin-table td {
+    padding: 0.75rem 0.65rem;
+    font-size: 0.82rem;
   }
 }
 
-@media (max-width: 600px) {
+/* Tablets & Large Mobile (max-width: 768px) */
+@media (max-width: 768px) {
+  /* Navbar */
+  .navbar {
+    padding: 0.75rem 0;
+  }
   .nav-subtitle {
     display: none;
   }
-  .step-label {
-    display: none;
+  .nav-title {
+    font-size: 1.05rem;
   }
+  .nav-logo {
+    width: 34px;
+    height: 34px;
+  }
+  
+  /* Containers & Spacing */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Payment Grid collapses to 1 column */
+  .payment-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  /* Admin Header and Tabs */
+  .admin-tabs-nav {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    justify-content: flex-start;
+  }
+  .admin-tab-btn {
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .admin-search-bar {
+    width: 100%;
+  }
+  .admin-search-bar input,
+  .admin-search-bar select {
+    width: 100% !important;
+  }
+  #export-csv-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  /* Footer */
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  /* Cards */
   .card {
     padding: 1.25rem;
+    border-radius: 16px;
+  }
+
+  /* Modals */
+  .modal-card {
+    padding: 1.25rem;
+    max-width: 95vw;
+    border-radius: 16px;
+    margin: 0.5rem;
+  }
+
+  /* Key info grid */
+  .key-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Standard & Small Mobile (max-width: 540px) */
+@media (max-width: 540px) {
+  /* Headings */
+  h1 {
+    font-size: 1.65rem !important;
+  }
+  h2 {
+    font-size: 1.35rem !important;
+  }
+
+  /* Pass Student Card: Center avatar & stack metadata */
+  .pass-student-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 1rem;
+  }
+  .pass-meta-grid {
+    grid-template-columns: 1fr;
+    text-align: left;
+    margin-top: 0.75rem;
+  }
+  #pass-printable-card {
+    padding: 1.25rem;
+  }
+
+  /* Step Progress Tracker */
+  .steps-wrapper {
+    margin-bottom: 1.75rem;
+  }
+  .steps-wrapper::before {
+    top: 17px;
+    transform: none;
+    left: 8%;
+    right: 8%;
+  }
+  .step-circle {
+    width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
+  }
+  .step-label {
+    display: none; /* Hide labels on mobile to avoid overcrowding */
+  }
+
+  /* Hero CTA Buttons */
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  .hero-cta-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Countdown Grid */
+  .countdown-grid {
+    gap: 0.4rem;
+  }
+  .countdown-grid > div {
+    padding: 0.6rem 0.25rem !important;
+  }
+  .countdown-grid div[id^="timer-"] {
+    font-size: 1.35rem !important;
+  }
+
+  /* Terms Scroll Box */
+  #terms-scroll-box {
+    height: 200px !important;
+    padding: 0.9rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Button Touch Heights */
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn-sm {
+    min-height: 36px;
+  }
+
+  /* Input fields minimum height */
+  .form-input, .form-select {
+    min-height: 44px;
+    font-size: 0.92rem;
+  }
+
+  /* Nav actions */
+  .nav-actions {
+    gap: 0.4rem;
+  }
+  .nav-actions .btn {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.78rem;
+  }
+  #nav-user-pill {
+    padding: 0.2rem 0.5rem !important;
+  }
+  #nav-user-name {
+    max-width: 80px !important;
+    font-size: 0.75rem !important;
+  }
+  #admin-user-tag {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Extra Small Mobile (max-width: 360px) */
+@media (max-width: 360px) {
+  .key-info-grid {
+    grid-template-columns: 1fr;
+  }
+  .countdown-grid div[id^="timer-"] {
+    font-size: 1.15rem !important;
+  }
+  .btn-primary.btn-lg, .btn-secondary.btn-lg {
+    font-size: 0.88rem;
+    padding: 0.75rem 1rem;
   }
 }

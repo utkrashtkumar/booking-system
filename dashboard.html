@@ -183,7 +183,7 @@
           </div>
 
           <!-- Payment Instructions Grid -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem; align-items: center;">
+          <div class="payment-grid">
             <!-- QR Code Display -->
             <div style="text-align: center; background: var(--bg-surface); padding: 1.25rem; border-radius: 16px; box-shadow: 0 6px 30px rgba(0,0,0,0.4); border: 2px solid var(--border-glass);">
               <a href="assets/upi-qr-stylish.png" target="_blank" title="Click to view full high-resolution QR card" style="text-decoration: none; display: block;">
@@ -379,7 +379,7 @@
 
         <!-- TAB B: CHOOSE TECH AVATAR -->
         <div id="avatar-tab-preset" style="display: none;">
-          <div id="avatar-grid-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; max-height: 280px; overflow-y: auto; padding: 0.5rem;">
+          <div id="avatar-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding: 0.5rem;">
             <!-- Populated via avatar.js -->
           </div>
         </div>
