@@ -319,59 +319,115 @@ function renderUsersTable(users) {
   }).join("");
 }
 
-// Render Payments Table in Tab 2
+// Render Payments Table in Tab 2 - split into Pending and Approved sections
 function renderPaymentsTable(payments, profiles) {
-  const tbody = document.getElementById("payments-table-body");
-  if (!tbody) return;
+  const pendingBody = document.getElementById("payments-pending-body");
+  const approvedBody = document.getElementById("payments-approved-body");
+  const pendingCountEl = document.getElementById("pending-section-count");
+  const approvedCountEl = document.getElementById("approved-section-count");
 
-  if (payments.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-dim);">No payment submissions yet.</td></tr>`;
-    return;
-  }
+  if (!pendingBody || !approvedBody) return;
 
   const profileMap = new Map(profiles.map(p => [p.id, p]));
 
-  tbody.innerHTML = payments.map((p) => {
-    const student = profileMap.get(p.user_id) || {};
-    const studentName = student.full_name || "Student";
-    const timeFormatted = new Date(p.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+  const pending = payments.filter(p => p.status === "pending" || p.status === "rejected");
+  const approved = payments.filter(p => p.status === "approved");
 
-    let statusBadge = `<span class="badge badge-warning">Pending Review</span>`;
-    if (p.status === "approved") {
-      statusBadge = `<span class="badge badge-success">Approved ✓</span>`;
-    } else if (p.status === "rejected") {
-      statusBadge = `<span class="badge badge-danger">Rejected</span>`;
-    }
+  if (pendingCountEl) pendingCountEl.textContent = `${pending.length} pending`;
+  if (approvedCountEl) approvedCountEl.textContent = `${approved.length} approved`;
 
-    const screenshotBtn = p.screenshot_url 
-      ? `<button class="btn btn-secondary btn-sm" onclick="openScreenshotModal('${p.screenshot_url}')">View Proof 🖼️</button>`
-      : `<span style="color: var(--text-dim); font-size: 0.8rem;">No file</span>`;
-
-    const actionButtons = p.status === "approved" 
-      ? `<span style="color: var(--success); font-weight: 700; font-size: 0.82rem;">Pass Active 🎟️</span>`
-      : `
-        <div style="display: flex; gap: 0.4rem;">
-          <button class="btn btn-primary btn-sm" onclick="approvePayment('${p.id}', '${p.user_id}', '${p.utr_number}', '${studentName.replace(/'/g, "\\'")}', '${student.email || ''}', '${p.payment_mobile}')">Approve ✓</button>
-          <button class="btn btn-danger btn-sm" onclick="openRejectModal('${p.id}', '${studentName.replace(/'/g, "\\'")}', '${(student.email || '').replace(/'/g, "\\'")}', '${(p.utr_number || '').replace(/'/g, "\\'")}')">Reject / Notice ✕</button>
-        </div>
-      `;
-
-    return `
+  // --- RENDER PENDING TABLE ---
+  if (pending.length === 0) {
+    pendingBody.innerHTML = `
       <tr>
-        <td style="font-size: 0.8rem; color: var(--text-dim);">${timeFormatted}</td>
-        <td>
-          <div style="font-weight: 600;">${studentName}</div>
-          <div style="font-size: 0.75rem; color: var(--text-dim);">${student.email || ""}</div>
+        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-dim);">
+          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎉</div>
+          <div>No pending submissions! All payments have been reviewed.</div>
         </td>
-        <td>+91 ${p.payment_mobile || student.mobile || "--"}</td>
-        <td class="font-mono" style="color: var(--gold); font-weight: 700;">${p.utr_number}</td>
-        <td style="font-weight: 700; color: var(--text-main);">₹${p.amount || 99}</td>
-        <td>${screenshotBtn}</td>
-        <td>${statusBadge}</td>
-        <td>${actionButtons}</td>
-      </tr>
-    `;
-  }).join("");
+      </tr>`;
+  } else {
+    pendingBody.innerHTML = pending.map((p) => {
+      const student = profileMap.get(p.user_id) || {};
+      const studentName = student.full_name || "Student";
+      const timeFormatted = new Date(p.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+
+      let statusBadge = `<span class="badge badge-warning">Pending Review</span>`;
+      if (p.status === "rejected") statusBadge = `<span class="badge badge-danger">Rejected ✕</span>`;
+
+      const screenshotBtn = p.screenshot_url
+        ? `<button class="btn btn-secondary btn-sm" onclick="openScreenshotModal('${p.screenshot_url}')">View Proof 🖼️</button>`
+        : `<span style="color: var(--text-dim); font-size: 0.8rem;">No file</span>`;
+
+      return `
+        <tr>
+          <td style="font-size: 0.8rem; color: var(--text-dim);">${timeFormatted}</td>
+          <td>
+            <div style="font-weight: 600;">${studentName}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">${student.email || ""}</div>
+          </td>
+          <td>+91 ${p.payment_mobile || student.mobile || "--"}</td>
+          <td class="font-mono" style="color: var(--gold); font-weight: 700;">${p.utr_number}</td>
+          <td style="font-weight: 700;">₹${p.amount || 99}</td>
+          <td>${screenshotBtn}</td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+              ${statusBadge}
+              <div style="display: flex; gap: 0.4rem; margin-top: 0.25rem;">
+                <button class="btn btn-primary btn-sm" onclick="approvePayment('${p.id}', '${p.user_id}', '${p.utr_number}', '${studentName.replace(/'/g, "\\'")}', '${student.email || ''}', '${p.payment_mobile}')">Approve ✓</button>
+                <button class="btn btn-danger btn-sm" onclick="openRejectModal('${p.id}', '${studentName.replace(/'/g, "\\'")}', '${(student.email || '').replace(/'/g, "\\'")}', '${(p.utr_number || '').replace(/'/g, "\\'")}')">Reject ✕</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  // --- RENDER APPROVED TABLE ---
+  if (approved.length === 0) {
+    approvedBody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-dim);">
+          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📋</div>
+          <div>No approved payments yet.</div>
+        </td>
+      </tr>`;
+  } else {
+    // Build pass code map for approved payments
+    const passMap = new Map(allUsersData.filter(u => u.pass).map(u => [u.id, u.pass]));
+
+    approvedBody.innerHTML = approved.map((p) => {
+      const student = profileMap.get(p.user_id) || {};
+      const studentName = student.full_name || "Student";
+      const approvedTime = p.approved_at
+        ? new Date(p.approved_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })
+        : new Date(p.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+
+      const screenshotBtn = p.screenshot_url
+        ? `<button class="btn btn-secondary btn-sm" onclick="openScreenshotModal('${p.screenshot_url}')">View Proof 🖼️</button>`
+        : `<span style="color: var(--text-dim); font-size: 0.8rem;">No file</span>`;
+
+      const pass = passMap.get(p.user_id);
+      const passCodeText = pass
+        ? `<span class="font-mono" style="color: var(--cyan); font-weight: 700;">${pass.pass_code}</span>`
+        : `<span style="color: var(--text-dim);">--</span>`;
+
+      return `
+        <tr>
+          <td style="font-size: 0.8rem; color: var(--success); font-weight: 600;">✅ ${approvedTime}</td>
+          <td>
+            <div style="font-weight: 600;">${studentName}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">${student.email || ""}</div>
+          </td>
+          <td>+91 ${p.payment_mobile || student.mobile || "--"}</td>
+          <td class="font-mono" style="color: var(--gold); font-weight: 700;">${p.utr_number}</td>
+          <td style="font-weight: 700; color: var(--success);">₹${p.amount || 99}</td>
+          <td>${screenshotBtn}</td>
+          <td>${passCodeText}</td>
+        </tr>
+      `;
+    }).join("");
+  }
 }
 
 // Approve Payment & Auto-Issue Pass

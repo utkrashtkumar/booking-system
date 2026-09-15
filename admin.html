@@ -294,16 +294,28 @@
           <!-- TAB 2: PAYMENT REVIEWS & APPROVAL                       -->
           <!-- ======================================================= -->
           <div id="tab-content-payments" style="display: none;">
-            <div class="card" style="padding: 1.5rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-                <div>
-                  <h2 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Payment Submissions Verification</h2>
-                  <p style="color: var(--text-muted); font-size: 0.85rem;">Verify UPI Transaction IDs and screenshots against bank statement before approving.</p>
-                </div>
-                <button id="refresh-payments-btn" class="btn btn-ghost btn-sm">🔄 Refresh List</button>
-              </div>
 
-              <!-- Payments Table -->
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+              <div>
+                <h2 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Payment Submissions Verification</h2>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Verify UPI Transaction IDs and screenshots before approving or rejecting.</p>
+              </div>
+              <button id="refresh-payments-btn" class="btn btn-ghost btn-sm">🔄 Refresh List</button>
+            </div>
+
+            <!-- ⚠️ SECTION 1: PENDING APPROVAL -->
+            <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem; border: 1.5px solid rgba(245, 158, 11, 0.4); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(245,158,11,0.04) 100%);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                  <span style="font-size: 1.4rem;">⏳</span>
+                  <div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: var(--warning);">Pending Approval</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Review and approve or reject each submission below.</div>
+                  </div>
+                </div>
+                <span id="pending-section-count" class="badge badge-warning" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">0 pending</span>
+              </div>
               <div class="table-container">
                 <table class="admin-table">
                   <thead>
@@ -314,18 +326,48 @@
                       <th>UTR / Transaction ID</th>
                       <th>Amount</th>
                       <th>Screenshot</th>
-                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
-                  <tbody id="payments-table-body">
-                    <tr>
-                      <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading payment submissions...</td>
-                    </tr>
+                  <tbody id="payments-pending-body">
+                    <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading...</td></tr>
                   </tbody>
                 </table>
               </div>
             </div>
+
+            <!-- ✅ SECTION 2: APPROVED PAYMENTS -->
+            <div class="card" style="padding: 1.5rem; border: 1.5px solid rgba(16, 185, 129, 0.35); background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16,185,129,0.04) 100%);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                  <span style="font-size: 1.4rem;">✅</span>
+                  <div>
+                    <div style="font-size: 1.05rem; font-weight: 800; color: var(--success);">Approved Payments</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">Entry passes have been issued to these students.</div>
+                  </div>
+                </div>
+                <span id="approved-section-count" class="badge badge-success" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">0 approved</span>
+              </div>
+              <div class="table-container">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Approved At</th>
+                      <th>Student Name</th>
+                      <th>Mobile</th>
+                      <th>UTR / Transaction ID</th>
+                      <th>Amount</th>
+                      <th>Screenshot</th>
+                      <th>Pass Code</th>
+                    </tr>
+                  </thead>
+                  <tbody id="payments-approved-body">
+                    <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
 
           <!-- ======================================================= -->
