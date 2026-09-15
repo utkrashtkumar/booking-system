@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login &amp; Sign Up | MCA Freshers 2026 - IET Lucknow</title>
+  <meta name="description" content="Sign up or login to generate your MCA Freshers 2026 entry pass for Institute of Engineering & Technology (IET), Lucknow.">
+  <link rel="stylesheet" href="css/style.css?v=2026.3">
+  <style>
+    .password-input-wrapper {
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+    .password-input-wrapper .form-input {
+      width: 100% !important;
+      padding-right: 3rem !important;
+    }
+    .password-toggle-btn {
+      position: absolute !important;
+      right: 0.75rem !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      cursor: pointer !important;
+      color: var(--text-dim) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 6px !important;
+      border-radius: 6px !important;
+      z-index: 10 !important;
+      transition: color 0.2s ease, transform 0.15s ease !important;
+    }
+    .password-toggle-btn:hover {
+      color: var(--text-main) !important;
+      transform: translateY(-50%) scale(1.1) !important;
+    }
+    .password-toggle-btn:focus-visible {
+      outline: 2px solid var(--primary) !important;
+    }
+    .password-toggle-btn .eye-icon {
+      display: block;
+      pointer-events: none;
+    }
+  </style>
+  <script>
+    window.togglePasswordVisibility = function(btn, inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isPass = input.type === "password" || input.getAttribute("type") === "password";
+      if (isPass) {
+        input.type = "text";
+        input.setAttribute("type", "text");
+        btn.setAttribute("title", "Hide Password");
+        btn.setAttribute("aria-label", "Hide Password");
+        btn.innerHTML = `<svg class="eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>`;
+      } else {
+        input.type = "password";
+        input.setAttribute("type", "password");
+        btn.setAttribute("title", "Show Password");
+        btn.setAttribute("aria-label", "Show Password");
+        btn.innerHTML = `<svg class="eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:none;"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      }
+    };
+  </script>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="nav-brand">
+          <img src="Ietlogo.png" alt="IET Lucknow Logo" class="nav-logo">
+          <div class="nav-titles">
+            <span class="nav-title">FRESHERS <span class="gradient-text">2026</span></span>
+            <span class="nav-subtitle">MCA • IET Lucknow</span>
+          </div>
+        </a>
+
+        <div class="nav-actions">
+          <button class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+          <a href="index.html" class="btn btn-ghost btn-sm">← Back to Home</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Auth Form Container -->
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1rem;">
+      <div class="card" style="width: 100%; max-width: 480px; padding: 2rem;">
+        <!-- Header / Logo -->
+        <div style="text-align: center; margin-bottom: 1.75rem;">
+          <img src="Ietlogo.png" alt="IET Lucknow Logo" style="width: 60px; height: 60px; border-radius: 50%; background: #ffffff; padding: 3px; box-shadow: 0 0 20px var(--primary-glow); margin-bottom: 0.75rem;">
+          <h1 style="font-size: 1.6rem; margin-bottom: 0.25rem;">MCA Freshers <span class="gradient-text">2026</span></h1>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Institute of Engineering &amp; Technology, Lucknow</p>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div style="display: flex; background: var(--bg-surface); border-radius: 10px; padding: 4px; margin-bottom: 1.75rem; border: 1px solid var(--border-glass);">
+          <button id="tab-btn-login" class="btn btn-sm" style="flex: 1; border-radius: 8px; font-weight: 700; background: var(--primary); color: #fff;">
+            Login
+          </button>
+          <button id="tab-btn-signup" class="btn btn-sm" style="flex: 1; border-radius: 8px; font-weight: 700; background: transparent; color: var(--text-muted);">
+            Sign Up
+          </button>
+        </div>
+
+        <!-- Global Alert Box -->
+        <div id="auth-alert" style="display: none; padding: 0.85rem 1rem; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1.25rem;"></div>
+
+        <!-- ================= LOGIN FORM ================= -->
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">College / Personal Email *</label>
+            <input type="email" id="login-email" class="form-input" placeholder="e.g. yourname@gmail.com" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label class="form-label" for="login-password" style="margin-bottom: 0;">Password *</label>
+              <a href="reset-password.html" id="forgot-password-link" style="font-size: 0.78rem; color: var(--cyan); text-decoration: none;">Forgot?</a>
+            </div>
+            <div class="password-input-wrapper">
+              <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this, 'login-password')" data-target="login-password" aria-label="Toggle password visibility" title="Show/Hide Password">
+                <svg class="eye-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.85rem;">
+            <span>Login to Dashboard</span>
+          </button>
+
+          <p style="text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+            Don't have an account? <a href="#" id="switch-to-signup" style="color: var(--primary-light); font-weight: 600; text-decoration: none;">Sign Up for Pass (₹99)</a>
+          </p>
+        </form>
+
+        <!-- ================= SIGN UP FORM ================= -->
+        <form id="signup-form" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="signup-name">Full Name (As on College ID) *</label>
+            <input type="text" id="signup-name" class="form-input" placeholder="e.g. Rahul Sharma" required minlength="2">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-email">Email Address *</label>
+            <input type="email" id="signup-email" class="form-input" placeholder="e.g. rahul@gmail.com" required>
+            <div class="form-hint">Verification link will be sent to this email</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-mobile">10-Digit WhatsApp / Mobile Number *</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <span style="background: var(--bg-surface); border: 1px solid var(--border-glass); border-radius: 10px; padding: 0.75rem 0.85rem; font-weight: 600; font-size: 0.9rem; color: var(--text-muted);">+91</span>
+              <input type="tel" id="signup-mobile" class="form-input" placeholder="e.g. 9876543210" required maxlength="10" pattern="[0-9]{10}">
+            </div>
+            <div id="mobile-duplicate-error" class="form-error" style="display: none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-gender">Select Gender *</label>
+            <select id="signup-gender" class="form-select" required>
+              <option value="" disabled selected>Choose your gender</option>
+              <option value="male">👨 Male</option>
+              <option value="female">👩 Female</option>
+              <option value="prefer_not_to_say">🧑 Prefer not to say</option>
+            </select>
+            <div class="form-hint">Helps tailor your pass avatar suggestions</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-password">Create Password *</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="signup-password" class="form-input" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this, 'signup-password')" data-target="signup-password" aria-label="Toggle password visibility" title="Show/Hide Password">
+                <svg class="eye-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="signup-confirm-password">Confirm Password *</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="signup-confirm-password" class="form-input" placeholder="Re-enter your password" required minlength="6" autocomplete="new-password">
+              <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility(this, 'signup-confirm-password')" data-target="signup-confirm-password" aria-label="Toggle confirm password visibility" title="Show/Hide Password">
+                <svg class="eye-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+            <div id="password-match-error" class="form-error" style="display: none;"></div>
+          </div>
+
+          <button type="submit" id="signup-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.85rem;">
+            <span>Create Account &amp; Verify Email</span>
+          </button>
+
+          <p style="text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted);">
+            Already have an account? <a href="#" id="switch-to-login" style="color: var(--primary-light); font-weight: 600; text-decoration: none;">Login</a>
+          </p>
+        </form>
+
+        <!-- Helpline in Auth Card -->
+        <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); text-align: center; font-size: 0.88rem; color: var(--text-dim); font-weight: 600;">
+          Need help registering? Call: 
+          <a href="tel:8922921012" style="color: var(--cyan); text-decoration: none; font-weight: 700;">8922921012</a> or 
+          <a href="tel:8006770753" style="color: var(--cyan); text-decoration: none; font-weight: 700;">8006770753</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Email Verification Notice Modal Popup -->
+    <div id="email-verify-modal" class="modal-backdrop">
+      <div class="modal-card" style="text-align: center;">
+        <div style="width: 68px; height: 68px; border-radius: 50%; background: var(--primary-glow); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 1.25rem; color: var(--primary-light);">
+          📬
+        </div>
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.75rem;">Check Your Email!</h2>
+        <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          We have sent a verification link to <strong id="verify-modal-email" style="color: var(--cyan);">your email</strong>.
+        </p>
+        <div style="background: var(--bg-glass-strong); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1rem; margin-bottom: 1.75rem; text-align: left; font-size: 0.85rem; color: var(--text-muted);">
+          <div style="font-weight: 700; color: var(--text-main); margin-bottom: 0.3rem;">⚡ Next Steps:</div>
+          <div>1. Open your inbox (or Spam/Promotions folder)</div>
+          <div>2. Click the confirmation link from Supabase / IET Freshers</div>
+          <div>3. Return here and <strong>Login</strong> to generate your ₹99 Entry Pass!</div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+          <button id="modal-to-login-btn" class="btn btn-primary" style="flex: 1;">
+            Got It! Go to Login
+          </button>
+          <button id="modal-resend-email-btn" class="btn btn-secondary">
+            Resend Link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" style="padding: 1.5rem 0; margin-top: 0;">
+      <div class="container" style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">
+        MCA Freshers 2026 • Institute of Engineering &amp; Technology (IET), Lucknow
+      </div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js?v=2026.3"></script>
+  <script src="js/theme.js?v=2026.3"></script>
+  <script src="js/auth.js?v=2026.3"></script>
+</body>
+</html>

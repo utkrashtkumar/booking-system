@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#F59E0B"/>
+          <stop offset="100%" stop-color="#EF4444"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg5)"/>
+      <path d="M25 120 C25 90 40 82 60 82 C80 82 95 90 95 120 Z" fill="#27272A"/>
+      <ellipse cx="60" cy="55" rx="23" ry="27" fill="#FED7AA"/>
+      <!-- Neat Side-part hair -->
+      <path d="M37 45 C37 26 50 20 62 20 C78 20 83 28 83 45 C73 34 57 32 37 45 Z" fill="#312E81"/>
+      <ellipse cx="49" cy="55" rx="3" ry="2" fill="#18181B"/>
+      <ellipse cx="71" cy="55" rx="3" ry="2" fill="#18181B"/>
+      <!-- Smart Smile -->
+      <path d="M52 70 Q60 76 68 70" stroke="#7C2D12" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Glowing Ear Cuffs -->
+      <circle cx="36" cy="56" r="3" fill="#FBBF24"/>
+</svg>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg10" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#10B981"/>
+          <stop offset="100%" stop-color="#6366F1"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg10)"/>
+      <path d="M25 120 C25 92 40 84 60 84 C80 84 95 92 95 120 Z" fill="#1E1B4B"/>
+      <ellipse cx="60" cy="56" rx="22" ry="26" fill="#FBBF24"/>
+      <!-- Modern Braids / Bob -->
+      <path d="M34 50 C34 32 46 26 60 26 C74 26 86 32 86 50 C86 78 78 84 76 88 C74 80 72 70 72 56 C60 46 48 46 38 56 C38 70 36 80 34 88 Z" fill="#172554"/>
+      <!-- Tech Headset -->
+      <path d="M33 55 C32 36 44 24 60 24 C76 24 88 36 87 55" stroke="#A78BFA" stroke-width="3" fill="none"/>
+      <rect x="30" y="52" width="6" height="10" rx="3" fill="#8B5CF6"/>
+      <rect x="84" y="52" width="6" height="10" rx="3" fill="#8B5CF6"/>
+      <ellipse cx="49" cy="56" rx="3" ry="2" fill="#0F172A"/>
+      <ellipse cx="71" cy="56" rx="3" ry="2" fill="#0F172A"/>
+      <path d="M53 71 Q60 76 67 71" stroke="#92400E" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

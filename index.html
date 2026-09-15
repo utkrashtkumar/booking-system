@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCA Freshers 2026 | IET Lucknow</title>
+  <meta name="description" content="Official entry pass portal for MCA Freshers 2026 at Institute of Engineering & Technology (IET), Lucknow. Register, pay ₹99, and generate your digital QR entry pass.">
+  <link rel="canonical" href="https://utkrasht.in">
+  <!-- Open Graph / WhatsApp / Telegram Previews -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://utkrasht.in/">
+  <meta property="og:title" content="MCA Freshers 2026 | IET Lucknow">
+  <meta property="og:description" content="Official entry pass portal for MCA Freshers 2026 at IET Lucknow. Register now for ₹99 and download your official entry pass.">
+  <meta property="og:image" content="https://utkrasht.in/Ietlogo.png">
+  <link rel="icon" type="image/png" href="Ietlogo.png">
+  <link rel="stylesheet" href="css/style.css?v=2026.3">
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Background Glow & Grid -->
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <div class="page-wrapper">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="nav-brand">
+          <img src="Ietlogo.png" alt="IET Lucknow Logo" class="nav-logo">
+          <div class="nav-titles">
+            <span class="nav-title">FRESHERS <span class="gradient-text">2026</span></span>
+            <span class="nav-subtitle">MCA • IET Lucknow</span>
+          </div>
+        </a>
+
+        <div class="nav-actions">
+          <button class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+          <a href="auth.html?mode=login" class="btn btn-ghost btn-sm">Login</a>
+          <a href="auth.html?mode=signup" class="btn btn-primary btn-sm">Register ₹99</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main style="flex: 1;">
+      <!-- Hero Section -->
+      <section style="padding: 4.5rem 0 3rem; text-align: center; position: relative;">
+        <div class="container" style="max-width: 860px;">
+          <!-- Badge -->
+          <div style="margin-bottom: 1.25rem;">
+            <span class="badge badge-primary">DEPARTMENT OF MCA • IET LUCKNOW</span>
+          </div>
+
+          <!-- Main Heading -->
+          <h1 style="font-size: clamp(2.4rem, 6vw, 3.8rem); line-height: 1.15; margin-bottom: 1.25rem;">
+            Welcome MCA Juniors <br>
+            <span class="gradient-text">Freshers Party 2026</span>
+          </h1>
+
+          <!-- Subtitle / Batch Notice -->
+          <p style="font-size: clamp(1rem, 2.5vw, 1.2rem); color: var(--text-muted); max-width: 680px; margin: 0 auto 2rem; line-height: 1.6;">
+            MCA Batch of 2025–2027 cordially invites the incoming MCA Batch of 2026–2028 to an electrifying, unforgettable evening of music, dance, memories, and celebration!
+          </p>
+
+          <!-- Countdown Timer Section -->
+          <div class="card" style="max-width: 580px; margin: 0 auto 2.5rem; padding: 1.5rem; border-color: rgba(124, 58, 237, 0.25);">
+            <div style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 700; margin-bottom: 1rem;">
+              ⏳ Event Starts In (27 Sept 2026 • 12:00 PM)
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;" id="countdown-grid">
+              <div style="background: var(--bg-surface); padding: 0.85rem 0.5rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 1.8rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif; color: var(--primary-light);" id="timer-days">--</div>
+                <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim); font-weight: 600; margin-top: 0.2rem;">Days</div>
+              </div>
+              <div style="background: var(--bg-surface); padding: 0.85rem 0.5rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 1.8rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif; color: var(--cyan);" id="timer-hours">--</div>
+                <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim); font-weight: 600; margin-top: 0.2rem;">Hours</div>
+              </div>
+              <div style="background: var(--bg-surface); padding: 0.85rem 0.5rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 1.8rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif; color: var(--gold);" id="timer-mins">--</div>
+                <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim); font-weight: 600; margin-top: 0.2rem;">Mins</div>
+              </div>
+              <div style="background: var(--bg-surface); padding: 0.85rem 0.5rem; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                <div style="font-size: 1.8rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif; color: var(--success);" id="timer-secs">--</div>
+                <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim); font-weight: 600; margin-top: 0.2rem;">Secs</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Action Buttons -->
+          <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="auth.html?mode=signup" class="btn btn-primary btn-lg">
+              <span>🎟️ Get Entry Pass</span>
+              <span class="badge" style="background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 0.2rem 0.5rem; font-size: 0.75rem;">₹99 ONLY</span>
+            </a>
+            <a href="auth.html?mode=login" class="btn btn-secondary btn-lg">
+              <span>Student Login</span>
+              <span>→</span>
+            </a>
+          </div>
+
+          <!-- Fee & Verification Notice -->
+          <div style="margin-top: 1.5rem;">
+            <span class="exclusivity-notice">
+              🔒 Only MCA IET college students allowed • Outsiders are strictly prohibited
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Key Info Banner -->
+      <section style="padding: 2rem 0; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); background: var(--bg-glass);">
+        <div class="container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; text-align: center;">
+          <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">📅</div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Date &amp; Time</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">27 Sept 2026 (12 PM - 6 PM)</div>
+          </div>
+          <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">📍</div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Venue</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">IET Lucknow Campus Auditorium</div>
+          </div>
+          <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">💰</div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Entry Fee</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">₹99 (Pay via UPI)</div>
+          </div>
+          <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">👔</div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Dress Code</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Smart Casuals / Ethnic Glamour</div>
+          </div>
+          <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">📱</div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">Entry Pass</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Digital Scannable QR Pass</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Event Highlights / Why Attend -->
+      <section style="padding: 4.5rem 0;">
+        <div class="container">
+          <div style="text-align: center; max-width: 600px; margin: 0 auto 3rem;">
+            <span class="badge badge-primary" style="margin-bottom: 0.75rem;">Experience The Night</span>
+            <h2 style="font-size: 2.25rem; margin-bottom: 0.75rem;">Party Highlights & Vibes</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              We've curated an unforgettable evening designed to welcome you to the MCA family at IET Lucknow.
+            </p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+            <!-- Card 1 -->
+            <div class="card">
+              <div style="font-size: 2.2rem; margin-bottom: 1rem;">🎧</div>
+              <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">DJ &amp; EDM Stage</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                State-of-the-art sound systems, high-voltage lighting, and a dedicated DJ booth ready to play your favorite beats.
+              </p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card">
+              <div style="font-size: 2.2rem; margin-bottom: 1rem;">👑</div>
+              <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Crowning Titles</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Compete for prestigious titles: Mr. &amp; Ms. Fresher 2026, Best Dressed, and Talent of the Evening with grand trophies.
+              </p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card">
+              <div style="font-size: 2.2rem; margin-bottom: 1rem;">🍕</div>
+              <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Feast &amp; Refreshments</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Delicious multicourse dinner, appetizers, and refreshing coolers curated specially for all attendees.
+              </p>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="card">
+              <div style="font-size: 2.2rem; margin-bottom: 1rem;">📸</div>
+              <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Memory Photo Booths</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Instagrammable photo booths, neon backdrops, and professional photography to capture your best moments.
+              </p>
+            </div>
+
+            <!-- Card 5: Female Security & Campus Safety -->
+            <div class="card">
+              <div style="font-size: 2.2rem; margin-bottom: 1rem;">🛡️</div>
+              <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Safety &amp; Female Security</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Dedicated security marshals and female student coordinators on ground ensuring a 100% safe, comfortable, protected, and respectful atmosphere for female attendees.
+              </p>
+            </div>
+
+            <!-- Card 6: Strict Decorum & Anti-Ragging Assurance -->
+            <div class="card">
+              <div style="font-size: 2.2rem; margin-bottom: 1rem;">🤝</div>
+              <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Zero Ragging &amp; Strict Decorum</h3>
+              <p style="color: var(--text-muted); font-size: 0.9rem;">
+                Strictly enforced code of conduct ensuring zero tolerance against ragging or indiscipline. A warm, dignified, supportive, and family-like welcome for every junior.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How to Get Your Pass (4 Simple Steps) -->
+      <section style="padding: 4rem 0; background: var(--bg-glass);">
+        <div class="container">
+          <div style="text-align: center; max-width: 600px; margin: 0 auto 3rem;">
+            <span class="badge badge-primary" style="margin-bottom: 0.75rem;">Fast &amp; Simple</span>
+            <h2 style="font-size: 2.25rem; margin-bottom: 0.75rem;">How It Works</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+              Follow these simple steps to claim your official Freshers 2026 digital entry pass.
+            </p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem;">
+            <div class="card" style="text-align: center;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin: 0 auto 1rem;">1</div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem;">Sign Up</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Create account with name, email, 10-digit mobile, and gender. Confirm your email link.</p>
+            </div>
+
+            <div class="card" style="text-align: center;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--cyan); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin: 0 auto 1rem;">2</div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem;">Agree &amp; Pay ₹99</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Review mandatory code of conduct, scan UPI QR, and submit your UTR number + screenshot.</p>
+            </div>
+
+            <div class="card" style="text-align: center;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--gold); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin: 0 auto 1rem;">3</div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem;">Choose Avatar</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Upload your own photo or pick from 12 tech avatars to customize your pass card.</p>
+            </div>
+
+            <div class="card" style="text-align: center;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--success); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin: 0 auto 1rem;">4</div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem;">Get QR Pass</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Once admin approves, download your entry pass with scannable QR code in PDF/PNG format.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Helpline & Contact Section -->
+      <section style="padding: 4.5rem 0;" id="contact-section">
+        <div class="container">
+          <div class="card" style="max-width: 800px; margin: 0 auto; text-align: center; border-color: rgba(6, 182, 212, 0.3); background: linear-gradient(180deg, var(--bg-card) 0%, rgba(6, 182, 212, 0.04) 100%);">
+            <span class="badge badge-primary" style="margin-bottom: 0.75rem;">Support &amp; Queries</span>
+            <h2 style="font-size: 2rem; margin-bottom: 0.6rem;">Need Help or Have Questions?</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 580px; margin: 0 auto 2rem;">
+              Facing issues with registration, UPI payment verification, or pass generation? Contact the MCA Batch of 2025–2027 Organizing Committee directly.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; text-align: left;">
+              <!-- Coordinator 1 -->
+              <a href="tel:8922921012" class="card" style="text-decoration: none; padding: 1.25rem; border-color: var(--border-glass); display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary-glow); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--primary-light); flex-shrink: 0;">📞</div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Student Coordinator</div>
+                  <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">+91 8922921012</div>
+                  <div style="font-size: 0.82rem; color: var(--cyan); font-weight: 700;">Tap to Call Immediately →</div>
+                </div>
+              </a>
+
+              <!-- Coordinator 2 -->
+              <a href="tel:8006770753" class="card" style="text-decoration: none; padding: 1.25rem; border-color: var(--border-glass); display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--cyan-glow); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--cyan); flex-shrink: 0;">📞</div>
+                <div>
+                  <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Organizing Team Helpline</div>
+                  <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">+91 8006770753</div>
+                  <div style="font-size: 0.82rem; color: var(--cyan); font-weight: 700;">Tap to Call Immediately →</div>
+                </div>
+              </a>
+            </div>
+
+            <div style="margin-top: 1.75rem; font-size: 0.85rem; color: var(--text-dim); font-weight: 500;">
+              📍 MCA Department, Institute of Engineering &amp; Technology (IET), Sitapur Road, Lucknow - 226021
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-col">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+              <img src="Ietlogo.png" alt="IET Logo" style="width: 36px; height: 36px; border-radius: 50%; background: #fff; padding: 2px;">
+              <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text-main);">
+                MCA FRESHERS <span class="gradient-text">2026</span>
+              </span>
+            </div>
+            <p>
+              Official registration and venue pass generation platform for MCA Batch of 2026–2028, Institute of Engineering &amp; Technology (IET), Lucknow.
+            </p>
+            <p style="margin-top: 0.6rem; font-size: 0.85rem; color: var(--cyan); font-weight: 700;">
+              Organized by MCA Batch of 2025–2027 Students
+            </p>
+          </div>
+
+          <div class="footer-col">
+            <h4>Quick Links</h4>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+              <li><a href="index.html" style="color: var(--text-muted); text-decoration: none;">Home</a></li>
+              <li><a href="auth.html?mode=signup" style="color: var(--text-muted); text-decoration: none;">Register (₹99)</a></li>
+              <li><a href="auth.html?mode=login" style="color: var(--text-muted); text-decoration: none;">Student Login</a></li>
+              <li><a href="dashboard.html" style="color: var(--text-muted); text-decoration: none;">Pass Dashboard</a></li>
+              <li><a href="admin.html" style="color: var(--cyan); text-decoration: none; font-weight: 600;">Admin Portal 🔐</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4>Need Any Help?</h4>
+            <p style="font-size: 0.85rem;">Have any issue with verification or pass generation? Call us:</p>
+            <div class="footer-helpline-box">
+              <a href="tel:8922921012" class="footer-phone-link">
+                <span>📞</span> <span>+91 8922921012</span>
+              </a>
+              <a href="tel:8006770753" class="footer-phone-link">
+                <span>📞</span> <span>+91 8006770753</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>© 2026 MCA Department, Institute of Engineering &amp; Technology (IET), Lucknow. All Rights Reserved.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    // Live Countdown Timer
+    (function initCountdown() {
+      const targetDate = new Date(CONFIG.EVENT.COUNTDOWN_TARGET).getTime();
+
+      function updateTimer() {
+        const now = new Date().getTime();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+          document.getElementById('timer-days').textContent = '00';
+          document.getElementById('timer-hours').textContent = '00';
+          document.getElementById('timer-mins').textContent = '00';
+          document.getElementById('timer-secs').textContent = '00';
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('timer-days').textContent = String(days).padStart(2, '0');
+        document.getElementById('timer-hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('timer-mins').textContent = String(mins).padStart(2, '0');
+        document.getElementById('timer-secs').textContent = String(secs).padStart(2, '0');
+      }
+
+      updateTimer();
+      setInterval(updateTimer, 1000);
+    })();
+  </script>
+</body>
+</html>

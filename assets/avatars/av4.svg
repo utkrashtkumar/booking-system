@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#3B82F6"/>
+          <stop offset="100%" stop-color="#8B5CF6"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg4)"/>
+      <path d="M22 120 C22 92 38 82 60 82 C82 82 98 92 98 120 Z" fill="#1E293B"/>
+      <ellipse cx="60" cy="56" rx="22" ry="26" fill="#FBCFE8"/>
+      <!-- Beanie Hat -->
+      <path d="M36 44 C36 24 50 18 60 18 C70 18 84 24 84 44 Z" fill="#F43F5E"/>
+      <rect x="34" y="40" width="52" height="8" rx="3" fill="#BE123C"/>
+      <!-- Round Glasses -->
+      <circle cx="50" cy="56" r="7" stroke="#0F172A" stroke-width="2" fill="none"/>
+      <circle cx="70" cy="56" r="7" stroke="#0F172A" stroke-width="2" fill="none"/>
+      <line x1="57" y1="56" x2="63" y2="56" stroke="#0F172A" stroke-width="2"/>
+      <circle cx="50" cy="56" r="2" fill="#0F172A"/>
+      <circle cx="70" cy="56" r="2" fill="#0F172A"/>
+      <path d="M54 70 Q60 74 66 70" stroke="#831843" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

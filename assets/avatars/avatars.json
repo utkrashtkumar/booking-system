@@ -1,0 +1,74 @@
+[
+  {
+    "id": "av1",
+    "name": "Cyber Dev",
+    "gender": "male",
+    "file": "assets/avatars/av1.svg"
+  },
+  {
+    "id": "av2",
+    "name": "Code Ninja",
+    "gender": "male",
+    "file": "assets/avatars/av2.svg"
+  },
+  {
+    "id": "av3",
+    "name": "AI Architect",
+    "gender": "male",
+    "file": "assets/avatars/av3.svg"
+  },
+  {
+    "id": "av4",
+    "name": "Cloud Hacker",
+    "gender": "male",
+    "file": "assets/avatars/av4.svg"
+  },
+  {
+    "id": "av5",
+    "name": "Quantum Dev",
+    "gender": "male",
+    "file": "assets/avatars/av5.svg"
+  },
+  {
+    "id": "av6",
+    "name": "Pixel Punk",
+    "gender": "male",
+    "file": "assets/avatars/av6.svg"
+  },
+  {
+    "id": "av7",
+    "name": "Cyber Queen",
+    "gender": "female",
+    "file": "assets/avatars/av7.svg"
+  },
+  {
+    "id": "av8",
+    "name": "Code Sorceress",
+    "gender": "female",
+    "file": "assets/avatars/av8.svg"
+  },
+  {
+    "id": "av9",
+    "name": "UI Diva",
+    "gender": "female",
+    "file": "assets/avatars/av9.svg"
+  },
+  {
+    "id": "av10",
+    "name": "Data Diva",
+    "gender": "female",
+    "file": "assets/avatars/av10.svg"
+  },
+  {
+    "id": "av11",
+    "name": "Quantum Star",
+    "gender": "female",
+    "file": "assets/avatars/av11.svg"
+  },
+  {
+    "id": "av12",
+    "name": "Web3 Diva",
+    "gender": "female",
+    "file": "assets/avatars/av12.svg"
+  }
+]

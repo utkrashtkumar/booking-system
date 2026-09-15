@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg7" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8B5CF6"/>
+          <stop offset="100%" stop-color="#F43F5E"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg7)"/>
+      <path d="M26 120 C26 92 40 84 60 84 C80 84 94 92 94 120 Z" fill="#311042"/>
+      <ellipse cx="60" cy="56" rx="22" ry="26" fill="#FED7AA"/>
+      <!-- Stylish Purple Bob Hair -->
+      <path d="M34 50 C32 26 50 20 62 20 C76 20 88 28 86 52 C82 72 78 78 76 80 C74 72 74 58 72 50 C62 42 46 44 38 52 C36 68 34 76 34 80 C32 74 32 64 34 50 Z" fill="#6B21A8"/>
+      <!-- Neon Glasses -->
+      <rect x="42" y="50" width="15" height="9" rx="3" fill="#F43F5E"/>
+      <rect x="63" y="50" width="15" height="9" rx="3" fill="#F43F5E"/>
+      <line x1="57" y1="54" x2="63" y2="54" stroke="#F43F5E" stroke-width="2"/>
+      <!-- Lip gloss -->
+      <path d="M54 70 Q60 75 66 70" stroke="#E11D48" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</svg>

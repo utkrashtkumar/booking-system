@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8B5CF6"/>
+          <stop offset="100%" stop-color="#EC4899"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg6)"/>
+      <path d="M24 120 C24 92 38 82 60 82 C82 82 96 92 96 120 Z" fill="#111827"/>
+      <ellipse cx="60" cy="55" rx="23" ry="27" fill="#FDE047"/>
+      <!-- Wild Synth Mohawk -->
+      <path d="M50 40 L52 14 L60 22 L66 12 L70 38 Z" fill="#EC4899"/>
+      <!-- Neon visor -->
+      <path d="M42 50 L78 50 L74 60 L46 60 Z" fill="#06B6D4"/>
+      <path d="M54 70 Q60 74 66 70" stroke="#854D0E" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

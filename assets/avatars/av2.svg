@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#7C3AED"/>
+          <stop offset="100%" stop-color="#DB2777"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg2)"/>
+      <!-- Jacket -->
+      <path d="M22 120 C22 92 38 80 60 80 C82 80 98 92 98 120 Z" fill="#18181B"/>
+      <path d="M52 80 L60 96 L68 80" stroke="#A855F7" stroke-width="3" fill="none"/>
+      <!-- Head -->
+      <ellipse cx="60" cy="54" rx="23" ry="26" fill="#FBBF24"/>
+      <!-- Headband -->
+      <rect x="36" y="38" width="48" height="9" rx="2" fill="#E11D48"/>
+      <circle cx="60" cy="42.5" r="2.5" fill="#FFFFFF"/>
+      <!-- Hair -->
+      <path d="M35 38 C34 22 52 18 64 18 C78 18 85 26 85 38 Z" fill="#111827"/>
+      <!-- Eyes -->
+      <ellipse cx="49" cy="54" rx="3" ry="2" fill="#18181B"/>
+      <ellipse cx="71" cy="54" rx="3" ry="2" fill="#18181B"/>
+      <!-- Smile -->
+      <path d="M54 68 Q60 72 66 68" stroke="#78350F" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg8" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0284C7"/>
+          <stop offset="100%" stop-color="#2DD4BF"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg8)"/>
+      <path d="M24 120 C24 92 38 84 60 84 C82 84 96 92 96 120 Z" fill="#0C4A6E"/>
+      <!-- Long flowy hair in back -->
+      <path d="M30 50 C30 80 32 105 32 120 L88 120 C88 105 90 80 90 50 Z" fill="#1E1B4B"/>
+      <ellipse cx="60" cy="55" rx="22" ry="25" fill="#FCD34D"/>
+      <!-- Bangs -->
+      <path d="M35 44 C42 32 54 30 64 30 C76 30 85 36 85 44 C76 38 66 36 50 38 Z" fill="#312E81"/>
+      <!-- Eyes with cat-eye liner -->
+      <ellipse cx="48" cy="54" rx="3.5" ry="2" fill="#0F172A"/>
+      <ellipse cx="72" cy="54" rx="3.5" ry="2" fill="#0F172A"/>
+      <path d="M53 69 Q60 74 67 69" stroke="#9A3412" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Neon hair highlight -->
+      <path d="M34 52 C33 70 34 90 35 110" stroke="#22D3EE" stroke-width="3" stroke-linecap="round"/>
+</svg>

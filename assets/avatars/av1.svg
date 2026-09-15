@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4F46E5"/>
+          <stop offset="100%" stop-color="#06B6D4"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg1)"/>
+      <!-- Body -->
+      <path d="M25 120 C25 90 40 82 60 82 C80 82 95 90 95 120 Z" fill="#0F172A"/>
+      <path d="M45 88 L60 102 L75 88 Z" fill="#38BDF8"/>
+      <!-- Head -->
+      <ellipse cx="60" cy="55" rx="24" ry="28" fill="#FCD34D"/>
+      <!-- Hair -->
+      <path d="M36 48 C36 28 50 22 68 22 C84 22 86 35 84 50 C76 42 66 38 52 40 C42 42 38 46 36 48 Z" fill="#1E1B4B"/>
+      <!-- Tech Glasses -->
+      <rect x="42" y="48" width="16" height="10" rx="3" fill="#06B6D4" opacity="0.9"/>
+      <rect x="62" y="48" width="16" height="10" rx="3" fill="#06B6D4" opacity="0.9"/>
+      <line x1="58" y1="53" x2="62" y2="53" stroke="#06B6D4" stroke-width="2"/>
+      <!-- Smile -->
+      <path d="M52 70 Q60 76 68 70" stroke="#78350F" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Cyber Earphone -->
+      <circle cx="36" cy="56" r="4" fill="#38BDF8"/>
+      <circle cx="84" cy="56" r="4" fill="#38BDF8"/>
+</svg>

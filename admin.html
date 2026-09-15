@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard &amp; Gate Scanner | MCA Freshers 2026</title>
+  <meta name="description" content="Organizing committee admin portal for IET Lucknow MCA Freshers 2026: attendee overview, payment verification, and gate QR check-in scanner.">
+  <link rel="icon" type="image/png" href="Ietlogo.png">
+  <link rel="stylesheet" href="css/style.css?v=2026.3">
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- HTML5-QRCode Library for Fast In-Browser Camera Gate Scanner -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    /* Admin specific styles */
+    .admin-tab-btn {
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: 1px solid var(--border-glass);
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .admin-tab-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-num {
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: 'Space Grotesk', sans-serif;
+      margin-top: 0.25rem;
+    }
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-glass);
+      background: var(--bg-surface);
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    .admin-table th {
+      background: var(--bg-card);
+      padding: 0.85rem 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      border-bottom: 1px solid var(--border-glass);
+      white-space: nowrap;
+    }
+    .admin-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .admin-table tr:hover td {
+      background: var(--bg-glass);
+    }
+    /* Scanner Viewfinder Styles */
+    #scanner-reader {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 25px var(--cyan-glow);
+      background: #000000;
+    }
+    #scanner-reader video {
+      border-radius: 14px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="admin.html" class="nav-brand">
+          <img src="Ietlogo.png" alt="IET Lucknow Logo" class="nav-logo">
+          <div class="nav-titles">
+            <span class="nav-title">ADMIN PORTAL 🔐</span>
+            <span class="nav-subtitle">MCA Freshers 2026 • IET Lucknow</span>
+          </div>
+        </a>
+
+        <div class="nav-actions">
+          <button class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+          <span id="admin-user-tag" class="badge badge-primary" style="font-size: 0.75rem;">utkrashtu@gmail.com</span>
+          <a href="index.html" class="btn btn-secondary btn-sm">Public Site</a>
+          <button id="admin-logout-btn" class="btn btn-danger btn-sm">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main style="flex: 1; padding: 2rem 1rem;">
+      <div class="container">
+        
+        <!-- Auth Guard Alert (Shown if non-admin attempts access) -->
+        <div id="admin-guard-banner" class="card" style="display: none; text-align: center; padding: 3rem 1.5rem; max-width: 500px; margin: 2rem auto;">
+          <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔒</div>
+          <h2 style="color: var(--error); margin-bottom: 0.5rem;">Admin Access Restricted</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            This panel is accessible strictly to <strong>utkrashtu@gmail.com</strong>. Please log in with the administrator credentials.
+          </p>
+          <a href="auth.html?mode=login" class="btn btn-primary">Login as Administrator</a>
+        </div>
+
+        <!-- Protected Admin Interface -->
+        <div id="admin-content-section" style="display: none;">
+          
+          <!-- Top Title Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h1 style="font-size: 1.8rem; margin-bottom: 0.2rem;">Organizing Committee <span class="gradient-text">Control Center</span></h1>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Manage registered attendees, verify UPI payments, and scan passes at the venue gate.</p>
+            </div>
+
+            <!-- Tab Navigation Switcher -->
+            <div style="display: flex; gap: 0.5rem; background: var(--bg-surface); padding: 4px; border-radius: 12px; border: 1px solid var(--border-glass);">
+              <button id="tab-btn-users" class="admin-tab-btn active">
+                <span>📊</span> <span>Overview &amp; Users</span>
+              </button>
+              <button id="tab-btn-payments" class="admin-tab-btn">
+                <span>📋</span> <span>Payment Reviews</span>
+                <span id="pending-count-badge" class="badge badge-warning" style="padding: 0.15rem 0.4rem; font-size: 0.7rem;">0</span>
+              </button>
+              <button id="tab-btn-scanner" class="admin-tab-btn">
+                <span>📷</span> <span>Gate QR Scanner</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ======================================================= -->
+          <!-- TAB 1: OVERVIEW & REGISTERED USERS                      -->
+          <!-- ======================================================= -->
+          <div id="tab-content-users">
+            
+            <!-- KPI Summary Cards Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+              <div class="kpi-card">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Total Registered</div>
+                <div id="kpi-total-users" class="kpi-num" style="color: var(--text-main);">0</div>
+              </div>
+
+              <div class="kpi-card">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Consent Agreed</div>
+                <div id="kpi-consent-done" class="kpi-num" style="color: var(--cyan);">0</div>
+              </div>
+
+              <div class="kpi-card">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Payments Submitted</div>
+                <div id="kpi-payments-submitted" class="kpi-num" style="color: var(--primary-light);">0</div>
+              </div>
+
+              <div class="kpi-card">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Pending Review</div>
+                <div id="kpi-pending-reviews" class="kpi-num" style="color: var(--warning);">0</div>
+              </div>
+
+              <div class="kpi-card">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase;">Passes Issued</div>
+                <div id="kpi-passes-issued" class="kpi-num" style="color: var(--success);">0</div>
+              </div>
+            </div>
+
+            <!-- Users Table Section -->
+            <div class="card" style="padding: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                  <!-- Search Input -->
+                  <input type="text" id="user-search-input" class="form-input" placeholder="Search by Name, Email, Mobile, or UTR..." style="width: 280px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+                  <!-- Status Filter -->
+                  <select id="user-filter-select" class="form-select" style="width: 170px; padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+                    <option value="all">All Attendees</option>
+                    <option value="pending">Pending Payment</option>
+                    <option value="approved">Pass Approved</option>
+                    <option value="rejected">Payment Rejected</option>
+                    <option value="unpaid">Not Paid Yet</option>
+                  </select>
+                </div>
+
+                <!-- Export CSV Button -->
+                <button id="export-csv-btn" class="btn btn-secondary btn-sm">
+                  <span>📥 Export to CSV</span>
+                </button>
+              </div>
+
+              <!-- Table -->
+              <div class="table-container">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Student</th>
+                      <th>Email</th>
+                      <th>Mobile</th>
+                      <th>Gender</th>
+                      <th>Consent</th>
+                      <th>Payment Status</th>
+                      <th>UTR Number</th>
+                      <th>Pass Code</th>
+                    </tr>
+                  </thead>
+                  <tbody id="users-table-body">
+                    <tr>
+                      <td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading attendees...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================= -->
+          <!-- TAB 2: PAYMENT REVIEWS & APPROVAL                       -->
+          <!-- ======================================================= -->
+          <div id="tab-content-payments" style="display: none;">
+            <div class="card" style="padding: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <div>
+                  <h2 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Payment Submissions Verification</h2>
+                  <p style="color: var(--text-muted); font-size: 0.85rem;">Verify UPI Transaction IDs and screenshots against bank statement before approving.</p>
+                </div>
+                <button id="refresh-payments-btn" class="btn btn-ghost btn-sm">🔄 Refresh List</button>
+              </div>
+
+              <!-- Payments Table -->
+              <div class="table-container">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Submitted At</th>
+                      <th>Student Name</th>
+                      <th>Mobile</th>
+                      <th>UTR / Transaction ID</th>
+                      <th>Amount</th>
+                      <th>Screenshot</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="payments-table-body">
+                    <tr>
+                      <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading payment submissions...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ======================================================= -->
+          <!-- TAB 3: GATE QR SCANNER (Embedded Camera Check-in)       -->
+          <!-- ======================================================= -->
+          <div id="tab-content-scanner" style="display: none;">
+            <div class="card" style="max-width: 650px; margin: 0 auto; text-align: center; padding: 2rem;">
+              <span class="badge badge-primary" style="margin-bottom: 0.5rem;">Venue Gate Entry</span>
+              <h2 style="font-size: 1.5rem; margin-bottom: 0.35rem;">Live Gate QR Scanner</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem; max-width: 480px; margin: 0 auto 1.5rem;">
+                Point the camera towards the student's entry pass QR code to verify validity and prevent duplicate entry.
+              </p>
+
+              <!-- Camera Controls -->
+              <div style="display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                <button id="start-camera-btn" class="btn btn-primary btn-sm">
+                  <span>📹 Start Camera Scanner</span>
+                </button>
+                <button id="stop-camera-btn" class="btn btn-secondary btn-sm" style="display: none;">
+                  <span>⏹️ Stop Camera</span>
+                </button>
+              </div>
+
+              <!-- Viewfinder Box -->
+              <div id="scanner-reader"></div>
+
+              <!-- Real-time Scan Result Card -->
+              <div id="scan-result-card" style="display: none; margin-top: 1.75rem; padding: 1.5rem; border-radius: 14px; text-align: left;">
+                <!-- Filled dynamically via admin.js -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Screenshot Preview Modal -->
+    <div id="screenshot-modal" class="modal-backdrop">
+      <div class="modal-card" style="max-width: 600px; text-align: center;">
+        <button id="screenshot-modal-close" class="modal-close">✕</button>
+        <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Payment Screenshot Proof</h3>
+        <div style="max-height: 480px; overflow-y: auto; background: #000; border-radius: 10px; padding: 0.5rem;">
+          <img id="modal-screenshot-img" src="" alt="Payment Screenshot" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+        </div>
+        <div style="margin-top: 1rem;">
+          <a id="modal-screenshot-download" href="" target="_blank" download class="btn btn-secondary btn-sm">Open Full Image</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rejection & Disciplinary Notice Modal -->
+    <div id="reject-modal" class="modal-backdrop">
+      <div class="modal-card" style="max-width: 600px; text-align: left;">
+        <button id="reject-modal-close" class="modal-close" aria-label="Close Modal">✕</button>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+          <span style="font-size: 1.8rem;">🚨</span>
+          <div>
+            <h3 style="font-size: 1.25rem; margin-bottom: 0.15rem; color: var(--error);">Pass Rejection &amp; Disciplinary Notice</h3>
+            <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">Issue a formal notice of rejection or misconduct to the student's dashboard.</p>
+          </div>
+        </div>
+
+        <!-- Student summary info -->
+        <div id="reject-student-info" style="background: var(--bg-surface); border: 1px solid var(--border-glass); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Student:</span>
+            <span id="reject-modal-student-name" style="font-weight: 700; color: var(--text-main);">--</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Email:</span>
+            <span id="reject-modal-student-email" style="font-family: var(--font-mono); color: var(--text-main);">--</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Submitted UTR:</span>
+            <span id="reject-modal-utr" style="font-family: var(--font-mono); color: var(--gold); font-weight: 700;">--</span>
+          </div>
+        </div>
+
+        <!-- Presets Selection -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="form-label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; display: block;">Select Notice / Reason Type:</label>
+          <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <label style="display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.75rem; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.06); border-radius: 8px; cursor: pointer;">
+              <input type="radio" name="reject-preset" value="fake" checked style="margin-top: 0.2rem; accent-color: var(--error);">
+              <div>
+                <strong style="color: var(--error); font-size: 0.88rem; display: block;">🚨 Strict Notice of Misconduct (Fake / Forged Payment Proof)</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Transmits an urgent disciplinary notice to student dashboard and flags record with MCA 2025–2027 Committee.</span>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.75rem; border: 1px solid var(--border-glass); background: var(--bg-surface); border-radius: 8px; cursor: pointer;">
+              <input type="radio" name="reject-preset" value="mismatch" style="margin-top: 0.2rem; accent-color: var(--warning);">
+              <div>
+                <strong style="color: var(--warning); font-size: 0.88rem; display: block;">⚠️ Bank Statement Mismatch (Payment Not Received)</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">UTR not found in bank statement for 8006770753-2@ibl. Requests student to verify and resubmit.</span>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.75rem; border: 1px solid var(--border-glass); background: var(--bg-surface); border-radius: 8px; cursor: pointer;">
+              <input type="radio" name="reject-preset" value="blurry" style="margin-top: 0.2rem; accent-color: var(--cyan);">
+              <div>
+                <strong style="color: var(--cyan); font-size: 0.88rem; display: block;">📷 Unclear / Cropped Payment Screenshot</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Screenshot is cropped, blurry, or missing bank reference details.</span>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.75rem; border: 1px solid var(--border-glass); background: var(--bg-surface); border-radius: 8px; cursor: pointer;">
+              <input type="radio" name="reject-preset" value="custom" style="margin-top: 0.2rem;">
+              <div>
+                <strong style="color: var(--text-main); font-size: 0.88rem; display: block;">✏️ Custom Rejection / Disciplinary Note</strong>
+                <span style="font-size: 0.78rem; color: var(--text-muted);">Write a custom explanation to send to the student.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Textarea for notice preview and edit -->
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label" for="reject-notice-text" style="font-weight: 600; font-size: 0.82rem; margin-bottom: 0.35rem;">
+            Notice Message to Transmit to Student Dashboard:
+          </label>
+          <textarea id="reject-notice-text" class="form-input" rows="4" style="resize: vertical; font-size: 0.84rem; line-height: 1.5; padding: 0.75rem;" required></textarea>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" id="reject-modal-cancel" class="btn btn-secondary btn-sm">Cancel</button>
+          <button type="button" id="reject-modal-confirm" class="btn btn-danger btn-sm" style="font-weight: 700;">
+            <span>🚨 Send Notice &amp; Reject Pass</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" style="padding: 1.5rem 0; margin-top: auto;">
+      <div class="container" style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">
+        MCA Freshers 2026 Organizing Committee • Institute of Engineering &amp; Technology (IET), Lucknow
+      </div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

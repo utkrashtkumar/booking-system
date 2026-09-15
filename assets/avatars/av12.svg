@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg12" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6366F1"/>
+          <stop offset="100%" stop-color="#06B6D4"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg12)"/>
+      <path d="M24 120 C24 92 38 84 60 84 C82 84 96 92 96 120 Z" fill="#0F172A"/>
+      <!-- Afro volume -->
+      <circle cx="44" cy="40" r="16" fill="#18181B"/>
+      <circle cx="76" cy="40" r="16" fill="#18181B"/>
+      <circle cx="60" cy="32" r="18" fill="#18181B"/>
+      <ellipse cx="60" cy="56" rx="22" ry="26" fill="#A16207"/>
+      <!-- Neon Headband -->
+      <path d="M38 42 Q60 38 82 42" stroke="#22D3EE" stroke-width="4" fill="none"/>
+      <ellipse cx="49" cy="56" rx="3" ry="2" fill="#18181B"/>
+      <ellipse cx="71" cy="56" rx="3" ry="2" fill="#18181B"/>
+      <path d="M53 71 Q60 76 67 71" stroke="#451A03" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+        <linearGradient id="bg9" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#F43F5E"/>
+          <stop offset="100%" stop-color="#F59E0B"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="60" fill="url(#bg9)"/>
+      <path d="M26 120 C26 92 40 84 60 84 C80 84 94 92 94 120 Z" fill="#1C1917"/>
+      <!-- High Top Bun -->
+      <circle cx="60" cy="22" r="14" fill="#3F2212"/>
+      <ellipse cx="60" cy="56" rx="22" ry="26" fill="#FBCFE8"/>
+      <!-- Hair frame -->
+      <path d="M36 48 C36 34 46 30 60 30 C74 30 84 34 84 48 C78 40 68 38 52 38 Z" fill="#3F2212"/>
+      <!-- Big Round Wire Glasses -->
+      <circle cx="49" cy="55" r="7.5" stroke="#F59E0B" stroke-width="2" fill="none"/>
+      <circle cx="71" cy="55" r="7.5" stroke="#F59E0B" stroke-width="2" fill="none"/>
+      <line x1="56.5" y1="55" x2="63.5" y2="55" stroke="#F59E0B" stroke-width="2"/>
+      <path d="M53 71 Q60 76 67 71" stroke="#BE123C" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

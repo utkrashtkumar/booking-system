@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard | MCA Freshers 2026 - IET Lucknow</title>
+  <meta name="description" content="Manage your MCA Freshers 2026 pass registration, payment status, and avatar at IET Lucknow.">
+  <link rel="icon" type="image/png" href="Ietlogo.png">
+  <link rel="stylesheet" href="css/style.css?v=2026.3">
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Canvas Confetti for Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <div class="page-wrapper">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="nav-brand">
+          <img src="Ietlogo.png" alt="IET Lucknow Logo" class="nav-logo">
+          <div class="nav-titles">
+            <span class="nav-title">FRESHERS <span class="gradient-text">2026</span></span>
+            <span class="nav-subtitle">Student Pass Portal</span>
+          </div>
+        </a>
+
+        <div class="nav-actions">
+          <button class="theme-toggle-btn" aria-label="Toggle Theme"></button>
+          <!-- User Profile Pill -->
+          <div id="nav-user-pill" style="display: flex; align-items: center; gap: 0.6rem; background: var(--bg-glass-strong); border: 1px solid var(--border-glass); padding: 0.3rem 0.8rem; border-radius: 25px;">
+            <img id="nav-avatar-img" src="assets/avatars/av1.svg" alt="Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--cyan);">
+            <span id="nav-user-name" style="font-size: 0.85rem; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Loading...</span>
+          </div>
+          <button id="logout-btn" class="btn btn-secondary btn-sm" title="Sign Out">Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main style="flex: 1; padding: 2.5rem 1rem;">
+      <div class="container" style="max-width: 800px;">
+        
+        <!-- Welcome Card -->
+        <div class="card" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-color: rgba(124, 58, 237, 0.3);">
+          <div>
+            <span class="badge badge-primary" style="margin-bottom: 0.4rem;">MCA Freshers 2026</span>
+            <h1 style="font-size: 1.5rem; margin-bottom: 0.2rem;">Hello, <span id="dash-greeting-name" class="gradient-text">Student</span> 👋</h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Complete the steps below to generate your official event entry pass.</p>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700;">Pass Fee</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold); font-family: 'Space Grotesk', sans-serif;">₹99 ONLY</div>
+          </div>
+        </div>
+
+        <!-- 4-Step Progress Bar -->
+        <div class="steps-wrapper">
+          <div class="step-item active" id="step-node-1">
+            <div class="step-circle">1</div>
+            <span class="step-label">Consent</span>
+          </div>
+          <div class="step-item" id="step-node-2">
+            <div class="step-circle">2</div>
+            <span class="step-label">Payment</span>
+          </div>
+          <div class="step-item" id="step-node-3">
+            <div class="step-circle">3</div>
+            <span class="step-label">Avatar</span>
+          </div>
+          <div class="step-item" id="step-node-4">
+            <div class="step-circle">4</div>
+            <span class="step-label">Entry Pass</span>
+          </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- STEP 1: TERMS & CONSENT FORM (Mandatory Scroll-To-Bottom) -->
+        <!-- ======================================================= -->
+        <section id="step-1-container" class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <span style="font-size: 1.75rem;">📜</span>
+            <div>
+              <h2 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Venue Terms &amp; Student Consent Form</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">You must read the code of conduct to the bottom before agreeing.</p>
+            </div>
+          </div>
+
+          <!-- Scrollable T&C Box -->
+          <div id="terms-scroll-box" style="height: 260px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border-glass); border-radius: 12px; padding: 1.25rem; font-size: 0.88rem; line-height: 1.7; color: var(--text-muted); margin-bottom: 1.25rem;">
+            <p style="font-weight: 700; color: var(--text-main); margin-bottom: 0.75rem;">
+              INSTITUTE OF ENGINEERING &amp; TECHNOLOGY (IET), LUCKNOW<br>
+              DEPARTMENT OF MASTER OF COMPUTER APPLICATIONS (MCA)<br>
+              OFFICIAL CODE OF CONDUCT &amp; VENUE PROTOCOLS - FRESHERS 2026
+            </p>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--error);">1. ZERO TOLERANCE FOR ALCOHOL &amp; INTOXICANTS:</strong><br>
+              Bringing, consuming, distributing, or entering under the influence of alcohol, drugs, narcotics, smoking, or any intoxicant is strictly forbidden. Any violation will result in immediate removal by security, forfeiture of pass without refund, disciplinary suspension by the college administration, and filing of a police report.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--primary-light);">2. RESPECTFUL BEHAVIOR &amp; DECORUM:</strong><br>
+              Attendees must maintain high professional conduct. Treat all juniors, seniors, faculty, security personnel, and service staff with respect. Healthy interaction and positive celebration are expected.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--error);">3. ZERO HARASSMENT &amp; ANTI-RAGGING:</strong><br>
+              Ragging, eve-teasing, harassment (verbal, physical, or non-verbal), inappropriate comments, or physical intimidation are strictly illegal and punishable under the Supreme Court of India Anti-Ragging guidelines. Immediate FIR will be lodged.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--cyan);">4. DRESS CODE GUIDELINES:</strong><br>
+              Attendees are requested to wear decent, elegant smart casuals, western party wear, or traditional Indian ethnic attire. Torn clothing, offensive slogans, or indecent dress are prohibited.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--gold);">5. STRICTLY PERSONAL &amp; NON-TRANSFERABLE PASS:</strong><br>
+              Your digital entry pass contains your verified name, mobile, roll number, photo, and a unique cryptographic QR code. Sharing, selling, screenshot-sharing, or forging passes will lead to blacklisting from all future college events.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--text-main);">6. PHOTOGRAPHY &amp; MEDIA:</strong><br>
+              Photography is permitted in designated stages, photo booths, and common event spaces. Unconsented, intrusive, or candid photography/videography of fellow students is strictly prohibited.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--text-main);">7. GATE CLOSING &amp; DISCIPLINE:</strong><br>
+              Gate check-in will strictly operate during scheduled entry hours. Security personnel and the MCA Batch of 2025–2027 Organizing Committee reserve the final right to deny entry to anyone failing to adhere to protocols.
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--error);">8. EXCLUSIVITY &amp; OUTSIDER BAN:</strong><br>
+              This event is exclusively for MCA students of IET Lucknow. Only MCA IET college students allowed — outsiders, non-college guests, or unverified individuals are strictly prohibited from entering the venue under any circumstances.
+            </div>
+
+            <div id="terms-scroll-bottom-anchor" style="padding: 0.5rem; background: var(--bg-glass-strong); border-radius: 8px; text-align: center; color: var(--success); font-weight: 700;">
+              ✓ You have reached the bottom of the agreement.
+            </div>
+          </div>
+
+          <!-- Scroll Hint -->
+          <div id="terms-scroll-hint" style="font-size: 0.8rem; color: var(--warning); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem;">
+            <span>⚠️</span> <span>Please scroll to the very bottom of the terms box above to enable agreement.</span>
+          </div>
+
+          <!-- Consent Checkbox & Action Button -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-size: 0.9rem; color: var(--text-main);">
+              <input type="checkbox" id="consent-checkbox" disabled style="margin-top: 0.25rem; width: 18px; height: 18px; accent-color: var(--primary);">
+              <span>I have thoroughly read, understood, and solemnly pledge to follow all the above Terms &amp; Conditions and college decorum guidelines at MCA Freshers 2026.</span>
+            </label>
+          </div>
+
+          <button id="agree-proceed-btn" class="btn btn-primary" disabled style="width: 100%; padding: 0.85rem;">
+            <span>I Agree &amp; Proceed to Payment (₹99)</span>
+          </button>
+        </section>
+
+        <!-- ======================================================= -->
+        <!-- STEP 2: UPI PAYMENT & REAL-TIME UTR DUPLICATE CHECK     -->
+        <!-- ======================================================= -->
+        <section id="step-2-container" class="card" style="display: none;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <span style="font-size: 1.75rem;">💳</span>
+            <div>
+              <h2 style="font-size: 1.35rem; margin-bottom: 0.2rem;">Scan &amp; Pay ₹99 via UPI</h2>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Complete payment using PhonePe, GPay, Paytm, or any authorized UPI app.</p>
+            </div>
+          </div>
+
+          <!-- STRICT AUTHORIZED PAYMENT WARNING BANNER -->
+          <div style="background: rgba(239, 68, 68, 0.12); border: 2px solid var(--error); border-radius: 12px; padding: 1.1rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.85rem;">
+            <span style="font-size: 1.8rem; flex-shrink: 0; line-height: 1;">⚠️</span>
+            <div style="font-size: 0.95rem; line-height: 1.6; color: var(--text-main);">
+              <span style="color: var(--error); font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;">IMPORTANT INSTRUCTION:</span><br>
+              Strictly pay <strong>ONLY</strong> to the authorized QR code given below with the account holder name: 
+              <span class="blinking-red-name">Bhanu Pratap Singh (DSW)</span>.
+            </div>
+          </div>
+
+          <!-- Payment Instructions Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.75rem; align-items: center;">
+            <!-- QR Code Display -->
+            <div style="text-align: center; background: var(--bg-surface); padding: 1.25rem; border-radius: 16px; box-shadow: 0 6px 30px rgba(0,0,0,0.4); border: 2px solid var(--border-glass);">
+              <a href="assets/upi-qr-stylish.png" target="_blank" title="Click to view full high-resolution QR card" style="text-decoration: none; display: block;">
+                <img id="upi-qr-image" src="assets/upi-qr.png" alt="Official IET MCA Freshers UPI QR Code" style="width: 100%; max-width: 270px; height: auto; object-fit: contain; display: block; margin: 0 auto; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.35); transition: transform 0.2s ease;">
+              </a>
+              <div style="margin-top: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="assets/upi-qr-stylish.png" download="IET_MCA_Freshers_2026_UPI_QR.png" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
+                  <span>📥 Save QR Card</span>
+                </a>
+                <a href="assets/upi-qr-stylish.png" target="_blank" class="btn btn-ghost btn-sm" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; color: var(--cyan);">
+                  <span>🔍 Enlarge</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- UPI Details Box -->
+            <div>
+              <div style="margin-bottom: 1rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-dim);">AUTHORIZED UPI ID</div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem;">
+                  <span id="display-upi-id" class="font-mono" style="font-size: 1rem; font-weight: 700; color: var(--cyan); background: var(--bg-surface); padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-glass);">8006770753-2@ibl</span>
+                  <button id="copy-upi-btn" class="btn btn-secondary btn-sm" title="Copy UPI ID">Copy</button>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 1rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-dim);">ACCOUNT HOLDER / RECEIVER</div>
+                <div style="font-size: 1.15rem; font-weight: 800; margin-top: 0.2rem;">
+                  <span class="blinking-red-name">Bhanu Pratap Singh (DSW)</span>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 1rem;">
+                <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-dim);">Fee Amount</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--gold); font-family: 'Space Grotesk', sans-serif;">₹99.00</div>
+              </div>
+
+              <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; background: var(--bg-glass-strong); padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                <strong>⚡ Steps to complete:</strong><br>
+                1. Open PhonePe, GPay, or Paytm and scan the QR code.<br>
+                2. Verify the receiver name displays <strong style="color: var(--error);">Bhanu Pratap Singh</strong>.<br>
+                3. Pay ₹99 and note down the <strong>12-digit UTR number</strong>.<br>
+                4. Upload the screenshot below.
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Submission Form -->
+          <form id="payment-form">
+            <div class="form-group">
+              <label class="form-label" for="payment-utr">Transaction / UTR Number *</label>
+              <input type="text" id="payment-utr" class="form-input font-mono" placeholder="Enter 12-digit UPI UTR number" required minlength="6" maxlength="25">
+              <!-- Real-time UTR duplicate error notice -->
+              <div id="utr-duplicate-error" class="form-error" style="display: none;"></div>
+              <div id="utr-checking-spinner" style="display: none; font-size: 0.8rem; color: var(--cyan); margin-top: 0.35rem;">
+                🔍 Checking Transaction ID uniqueness...
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="payment-mobile">Mobile Number Used for Payment *</label>
+              <input type="tel" id="payment-mobile" class="form-input" placeholder="e.g. 9876543210" required maxlength="10">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="payment-screenshot">Upload Payment Screenshot *</label>
+              <input type="file" id="payment-screenshot" class="form-input" accept="image/*" required>
+              <div class="form-hint">Accepted formats: JPG, PNG, WEBP (Max 5MB)</div>
+
+              <!-- Live Image Preview -->
+              <div id="screenshot-preview-box" style="display: none; margin-top: 0.75rem; text-align: center; background: var(--bg-surface); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border-glass);">
+                <img id="screenshot-preview-img" src="" alt="Screenshot Preview" style="max-height: 180px; max-width: 100%; border-radius: 8px; object-fit: contain;">
+                <div style="font-size: 0.75rem; color: var(--success); margin-top: 0.35rem;">✓ Screenshot loaded</div>
+              </div>
+            </div>
+
+            <button type="submit" id="payment-submit-btn" class="btn btn-primary" style="width: 100%; padding: 0.85rem; margin-top: 0.5rem;">
+              <span>Submit Payment for Approval</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- ======================================================= -->
+        <!-- STEP 3 & 4: STATUS & ENTRY PASS READY SCREEN            -->
+        <!-- ======================================================= -->
+        <section id="step-status-container" class="card" style="display: none; text-align: center; padding: 2.5rem 1.5rem;">
+          <!-- Status Icon & Banner -->
+          <div id="status-icon-box" style="width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 1.25rem;">
+            ⏳
+          </div>
+
+          <h2 id="status-heading" style="font-size: 1.6rem; margin-bottom: 0.5rem;">Payment Under Review</h2>
+          <p id="status-desc" style="color: var(--text-muted); font-size: 0.95rem; max-width: 520px; margin: 0 auto 1.75rem;">
+            Your payment details have been submitted to the MCA Batch of 2025–2027 Organizing Committee for verification.
+          </p>
+
+          <!-- Status Details Pill Box -->
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-glass); border-radius: 14px; padding: 1.25rem; max-width: 480px; margin: 0 auto 1.75rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem;">
+              <span style="color: var(--text-muted);">Status:</span>
+              <span id="detail-status-badge" class="badge badge-warning">Pending Review</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem;">
+              <span style="color: var(--text-muted);">Submitted UTR:</span>
+              <span id="detail-utr" class="font-mono" style="font-weight: 700; color: var(--text-main);">--</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem;">
+              <span style="color: var(--text-muted);">Amount Paid:</span>
+              <span style="font-weight: 700; color: var(--gold);">₹99.00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.85rem;">
+              <span style="color: var(--text-muted);">Submission Time:</span>
+              <span id="detail-submitted-at" style="color: var(--text-main);">--</span>
+            </div>
+          </div>
+
+          <!-- Rejection Note (If rejected) -->
+          <div id="rejection-note-box" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: left; max-width: 480px; margin-left: auto; margin-right: auto;">
+            <div style="font-weight: 700; color: var(--error); font-size: 0.9rem; margin-bottom: 0.25rem;">Rejection Note from Admin:</div>
+            <div id="rejection-note-text" style="font-size: 0.85rem; color: var(--text-main);">--</div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div id="status-action-btns">
+            <!-- For Approved Status -->
+            <a href="pass.html" id="view-pass-btn" class="btn btn-primary btn-lg" style="display: none;">
+              <span>🎟️ View &amp; Download Entry Pass</span>
+            </a>
+            <!-- For Rejected Status -->
+            <button id="resubmit-payment-btn" class="btn btn-danger" style="display: none;">
+              <span>Resubmit Payment Details</span>
+            </button>
+          </div>
+
+          <!-- Quick Update Avatar Button -->
+          <div style="margin-top: 1.75rem;">
+            <button id="open-avatar-modal-btn" class="btn btn-ghost btn-sm" style="color: var(--cyan);">
+              <span>📸 Change Pass Profile Photo / Avatar</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Help Widget -->
+        <div style="margin-top: 2rem; text-align: center; font-size: 0.85rem; color: var(--text-dim);">
+          Need payment verification assistance? Call Coordinators: 
+          <a href="tel:8922921012" style="color: var(--cyan); text-decoration: none; font-weight: 600;">8922921012</a> or 
+          <a href="tel:8006770753" style="color: var(--cyan); text-decoration: none; font-weight: 600;">8006770753</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- ======================================================= -->
+    <!-- MODAL: PROFILE PICTURE / AVATAR SELECTOR                -->
+    <!-- (Appears right after payment submission)                -->
+    <!-- ======================================================= -->
+    <div id="avatar-modal" class="modal-backdrop">
+      <div class="modal-card" style="max-width: 580px;">
+        <button id="avatar-modal-close" class="modal-close" aria-label="Close Modal">✕</button>
+
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div style="font-size: 2rem; margin-bottom: 0.3rem;">📸</div>
+          <h2 style="font-size: 1.4rem; margin-bottom: 0.25rem;">Customize Your Entry Pass!</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Upload your own photo or pick a cool MCA tech avatar to print on your pass.</p>
+        </div>
+
+        <!-- Avatar Tabs -->
+        <div style="display: flex; background: var(--bg-surface); border-radius: 10px; padding: 4px; margin-bottom: 1.25rem; border: 1px solid var(--border-glass);">
+          <button id="avatar-tab-upload-btn" class="btn btn-sm" style="flex: 1; border-radius: 8px; font-weight: 700; background: var(--primary); color: #fff;">
+            Upload Your Photo
+          </button>
+          <button id="avatar-tab-preset-btn" class="btn btn-sm" style="flex: 1; border-radius: 8px; font-weight: 700; background: transparent; color: var(--text-muted);">
+            Choose Tech Avatar
+          </button>
+        </div>
+
+        <!-- TAB A: UPLOAD PHOTO -->
+        <div id="avatar-tab-upload" style="text-align: center;">
+          <div style="margin-bottom: 1rem;">
+            <div style="width: 110px; height: 110px; border-radius: 50%; margin: 0 auto 0.75rem; border: 3px solid var(--primary); overflow: hidden; background: var(--bg-surface); display: flex; align-items: center; justify-content: center;">
+              <img id="avatar-upload-preview" src="assets/avatars/av1.svg" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-dim);">Live circular pass preview</div>
+          </div>
+
+          <div class="form-group" style="text-align: center;">
+            <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
+            <button type="button" id="avatar-browse-btn" class="btn btn-secondary" style="margin-bottom: 0.5rem;">
+              <span>📁 Choose Photo from Device</span>
+            </button>
+            <div class="form-hint">Best result: Square/clear portrait (Max 3MB)</div>
+          </div>
+        </div>
+
+        <!-- TAB B: CHOOSE TECH AVATAR -->
+        <div id="avatar-tab-preset" style="display: none;">
+          <div id="avatar-grid-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; max-height: 280px; overflow-y: auto; padding: 0.5rem;">
+            <!-- Populated via avatar.js -->
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; align-items: center;">
+          <button id="avatar-skip-btn" class="btn btn-ghost btn-sm" style="color: var(--text-dim);">Skip for Now</button>
+          <button id="avatar-save-btn" class="btn btn-primary">Save to My Pass</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" style="padding: 1.5rem 0; margin-top: auto;">
+      <div class="container" style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">
+        MCA Freshers 2026 • Institute of Engineering &amp; Technology (IET), Lucknow
+      </div>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
