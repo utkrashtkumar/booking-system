@@ -13,14 +13,51 @@
   <meta property="og:description" content="Official entry pass portal for MCA Freshers 2026 at IET Lucknow. Register now for ₹99 and download your official entry pass.">
   <meta property="og:image" content="https://utkrasht.in/Ietlogo.png">
   <link rel="icon" type="image/png" href="Ietlogo.png">
-  <link rel="stylesheet" href="css/style.css?v=2026.3">
+  <link rel="stylesheet" href="css/style.css?v=2026.4">
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Confetti Engine for Celebrations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-  <!-- Background Glow & Grid -->
+  <!-- Background Glow, Grid & Floating Disco Orbs -->
   <div class="bg-mesh"></div>
   <div class="bg-grid"></div>
+  <div class="disco-orb disco-orb-1"></div>
+  <div class="disco-orb disco-orb-2"></div>
+  <div class="disco-orb disco-orb-3"></div>
+
+  <!-- 🎉 Celebration Welcome Pop-up Overlay -->
+  <div id="party-welcome-overlay" class="party-welcome-overlay" role="dialog" aria-modal="true" aria-label="Welcome MCA Juniors Celebration">
+    <div class="party-welcome-card">
+      <button id="party-close-btn" class="party-close-btn" aria-label="Close celebration popup">✕</button>
+      <div class="party-disco-ball">🪩</div>
+      <div>
+        <span class="party-host-badge">✨ MCA BATCH 2025–2027 WELCOMES YOU ✨</span>
+      </div>
+      <h2 class="party-welcome-title">
+        Welcome MCA Juniors <br>
+        <span class="gradient-text">Freshers Celebration 2026</span>
+      </h2>
+      <p class="party-welcome-subtitle">
+        Get ready for the most sensational, high-energy party of the year! Book your digital pass, meet the seniors, and celebrate in grand style.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem;">
+        <button id="party-enter-btn" class="btn btn-primary btn-party-shimmer" style="padding: 0.75rem 1.8rem; font-size: 1rem;">
+          <span>🚀 Enter Party Portal Now</span>
+        </button>
+        <a href="auth.html?mode=signup" class="btn btn-secondary" style="padding: 0.75rem 1.4rem; font-size: 0.95rem;">
+          <span>🎟️ Register ₹99</span>
+        </a>
+      </div>
+      <div class="party-timer-container">
+        <div id="party-timer-progress" class="party-timer-progress"></div>
+      </div>
+      <div class="party-dismiss-hint">
+        Auto-entering portal in a few seconds • Tap anywhere or press Esc to dismiss
+      </div>
+    </div>
+  </div>
 
   <div class="page-wrapper">
     <!-- Navigation Bar -->
@@ -91,7 +128,7 @@
 
           <!-- Hero Action Buttons -->
           <div class="hero-cta-group">
-            <a href="auth.html?mode=signup" class="btn btn-primary btn-lg">
+            <a href="auth.html?mode=signup" class="btn btn-primary btn-lg btn-party-shimmer">
               <span>🎟️ Get Entry Pass</span>
               <span class="badge" style="background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 0.2rem 0.5rem; font-size: 0.75rem;">₹99 ONLY</span>
             </a>
@@ -99,6 +136,9 @@
               <span>Student Login</span>
               <span>→</span>
             </a>
+            <button type="button" onclick="window.triggerPartyCelebration &amp;&amp; window.triggerPartyCelebration()" class="btn-replay-party" title="Replay celebration welcome pop-up &amp; confetti">
+              <span>✨ Replay Celebration</span>
+            </button>
           </div>
 
           <!-- Fee & Verification Notice -->
@@ -154,8 +194,17 @@
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
             <!-- Card 1 -->
-            <div class="card">
-              <div style="font-size: 2.2rem; margin-bottom: 1rem;">🎧</div>
+            <div class="card card-party-highlight">
+              <div style="font-size: 2.2rem; margin-bottom: 1rem; display: flex; align-items: center;">
+                <span>🎧</span>
+                <div class="equalizer-container" title="DJ Live Beats Soundwave">
+                  <div class="eq-bar"></div>
+                  <div class="eq-bar"></div>
+                  <div class="eq-bar"></div>
+                  <div class="eq-bar"></div>
+                  <div class="eq-bar"></div>
+                </div>
+              </div>
               <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">DJ &amp; EDM Stage</h3>
               <p style="color: var(--text-muted); font-size: 0.9rem;">
                 State-of-the-art sound systems, high-voltage lighting, and a dedicated DJ booth ready to play your favorite beats.
@@ -163,7 +212,7 @@
             </div>
 
             <!-- Card 2 -->
-            <div class="card">
+            <div class="card card-party-highlight">
               <div style="font-size: 2.2rem; margin-bottom: 1rem;">👑</div>
               <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Crowning Titles</h3>
               <p style="color: var(--text-muted); font-size: 0.9rem;">
@@ -172,7 +221,7 @@
             </div>
 
             <!-- Card 3 -->
-            <div class="card">
+            <div class="card card-party-highlight">
               <div style="font-size: 2.2rem; margin-bottom: 1rem;">🍕</div>
               <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Feast &amp; Refreshments</h3>
               <p style="color: var(--text-muted); font-size: 0.9rem;">
@@ -181,7 +230,7 @@
             </div>
 
             <!-- Card 4 -->
-            <div class="card">
+            <div class="card card-party-highlight">
               <div style="font-size: 2.2rem; margin-bottom: 1rem;">📸</div>
               <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Memory Photo Booths</h3>
               <p style="color: var(--text-muted); font-size: 0.9rem;">
@@ -190,7 +239,7 @@
             </div>
 
             <!-- Card 5: Female Security & Campus Safety -->
-            <div class="card">
+            <div class="card card-party-highlight">
               <div style="font-size: 2.2rem; margin-bottom: 1rem;">🛡️</div>
               <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Safety &amp; Female Security</h3>
               <p style="color: var(--text-muted); font-size: 0.9rem;">
@@ -199,7 +248,7 @@
             </div>
 
             <!-- Card 6: Strict Decorum & Anti-Ragging Assurance -->
-            <div class="card">
+            <div class="card card-party-highlight">
               <div style="font-size: 2.2rem; margin-bottom: 1rem;">🤝</div>
               <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Zero Ragging &amp; Strict Decorum</h3>
               <p style="color: var(--text-muted); font-size: 0.9rem;">
@@ -343,6 +392,7 @@
   <!-- Scripts -->
   <script src="js/config.js"></script>
   <script src="js/theme.js"></script>
+  <script src="js/party.js?v=2026.4"></script>
   <script>
     // Live Countdown Timer
     (function initCountdown() {
