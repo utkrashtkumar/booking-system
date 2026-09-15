@@ -1311,46 +1311,6 @@ h1, h2, h3, h4, .font-heading {
   font-weight: 500;
 }
 
-/* Floating Celebration Pop-up Emojis */
-.party-emoji-container {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 100000;
-  overflow: hidden;
-}
-
-.party-popup-emoji {
-  position: absolute;
-  font-size: 2.2rem;
-  user-select: none;
-  pointer-events: none;
-  animation: floatEmojiUp 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
-}
-
-@keyframes floatEmojiUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px) scale(0.4) rotate(0deg);
-  }
-  15% {
-    opacity: 1;
-    transform: translateY(-20px) scale(1.25) rotate(-10deg);
-  }
-  40% {
-    transform: translateY(-90px) scale(1.05) rotate(12deg);
-  }
-  75% {
-    opacity: 0.9;
-    transform: translateY(-200px) scale(0.95) rotate(-8deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-320px) scale(0.7) rotate(20deg);
-  }
-}
-
 /* --- RESPONSIVE BREAKPOINTS --- */
 
 /* Tablets & Small Laptops (max-width: 992px) */

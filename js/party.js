@@ -2,7 +2,7 @@
  * 🎉 MCA Freshers 2026 - Party Celebration & Welcome Overlay
  * Organised by MCA Batch 2025–2027 for MCA Batch 2026–2028
  * Features: High-density multi-wave canvas confetti cannons, animated disco welcome pop-up,
- * floating party emoji popups, auto-entry grand finale celebration, and replay triggers.
+ * auto-entry grand finale celebration, and replay triggers.
  */
 
 (function () {
@@ -24,8 +24,6 @@
     '#38bdf8', // Sky Blue
     '#fbbf24'  // Bright Gold
   ];
-
-  const PARTY_EMOJIS = ['🎉', '🪩', '✨', '🥳', '🎊', '🔥', '🚀', '👑', '💃', '🕺', '⭐'];
 
   /**
    * Pleasant ascending celebration chime using Web Audio API (zero external sound files)
@@ -57,48 +55,6 @@
       });
     } catch (e) {
       // Audio autoplay policy or unavailable; fail silently
-    }
-  }
-
-  /**
-   * Spawn floating celebratory party pop-up emojis
-   */
-  function spawnPartyPopups(count = 14) {
-    let container = document.getElementById('party-floating-emojis');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'party-floating-emojis';
-      container.className = 'party-emoji-container';
-      document.body.appendChild(container);
-    }
-
-    for (let i = 0; i < count; i++) {
-      setTimeout(() => {
-        const emoji = document.createElement('div');
-        emoji.className = 'party-popup-emoji';
-        emoji.textContent = PARTY_EMOJIS[Math.floor(Math.random() * PARTY_EMOJIS.length)];
-
-        // Random horizontal positioning between 5% and 95%
-        const leftPos = Math.floor(Math.random() * 88) + 6;
-        // Bottom start position near center card or lower third
-        const bottomPos = Math.floor(Math.random() * 40) + 15;
-        const duration = (2.4 + Math.random() * 1.4).toFixed(2);
-        const size = (1.8 + Math.random() * 1.4).toFixed(2);
-
-        emoji.style.left = `${leftPos}%`;
-        emoji.style.bottom = `${bottomPos}%`;
-        emoji.style.fontSize = `${size}rem`;
-        emoji.style.animationDuration = `${duration}s`;
-
-        container.appendChild(emoji);
-
-        // Remove element once animation finishes
-        setTimeout(() => {
-          if (emoji && emoji.parentNode) {
-            emoji.parentNode.removeChild(emoji);
-          }
-        }, duration * 1000);
-      }, i * 80);
     }
   }
 
@@ -139,9 +95,6 @@
       ticks: 220
     });
 
-    // Pop up floating emojis
-    spawnPartyPopups(12);
-
     // Wave 2 (+320ms): Dual low-angle party poppers (240 particles)
     const t1 = setTimeout(() => {
       confetti({
@@ -174,7 +127,6 @@
         scalar: 1.15,
         ticks: 250
       });
-      spawnPartyPopups(8);
     }, 750);
     confettiIntervals.push(t2);
 
@@ -210,7 +162,6 @@
         startVelocity: 42,
         ticks: 220
       });
-      spawnPartyPopups(10);
     }, 2400);
     confettiIntervals.push(t4);
 
@@ -272,9 +223,6 @@
       startVelocity: 68,
       ticks: 260
     });
-
-    // Float celebration emojis across the portal screen
-    spawnPartyPopups(18);
 
     // Stage B (+380ms): Lateral streamer cascades (220 particles)
     setTimeout(() => {
