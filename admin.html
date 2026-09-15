@@ -104,11 +104,21 @@
       gap: 0.5rem;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      padding-bottom: 2px;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) rgba(255,255,255,0.08);
     }
     .admin-tabs-nav::-webkit-scrollbar {
-      display: none;
+      height: 4px;
+      display: block;
+    }
+    .admin-tabs-nav::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+    }
+    .admin-tabs-nav::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 10px;
     }
     .admin-tabs-nav .admin-tab-btn {
       flex-shrink: 0;
