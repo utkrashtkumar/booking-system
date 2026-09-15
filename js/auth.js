@@ -206,6 +206,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (authError.message.toLowerCase().includes("already registered") || 
             authError.message.toLowerCase().includes("user already exists")) {
           showAlert("⚠️ An account with this email already exists. Please login instead.", "error");
+        } else if (authError.message.toLowerCase().includes("database error saving new user")) {
+          showAlert("⚠️ Database trigger error: Please run fix-database-error.sql in your Supabase SQL Editor to resolve.", "error");
         } else {
           showAlert(authError.message, "error");
         }
