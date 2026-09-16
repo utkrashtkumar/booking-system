@@ -183,6 +183,24 @@ document.addEventListener("DOMContentLoaded", () => {
           screenshotUrl = publicUrl;
         }
 
+        // 2.5 ENSURE PROFILE RECORD EXISTS TO SATISFY FOREIGN KEY CONSTRAINT (payments_user_id_fkey)
+        try {
+          await supabase
+            .from("profiles")
+            .upsert({
+              id: currentStudent.id,
+              full_name: (typeof currentProfile !== "undefined" && currentProfile?.full_name) || currentStudent.user_metadata?.full_name || (currentStudent.email ? currentStudent.email.split("@")[0] : "Student"),
+              email: currentStudent.email,
+              mobile: mobile || (typeof currentProfile !== "undefined" && currentProfile?.mobile) || currentStudent.user_metadata?.mobile || null,
+              gender: (typeof currentProfile !== "undefined" && currentProfile?.gender) || currentStudent.user_metadata?.gender || "prefer_not_to_say",
+              avatar_url: (typeof currentProfile !== "undefined" && currentProfile?.avatar_url) || "assets/avatars/av1.svg",
+              avatar_type: "preset",
+              consent_agreed: true
+            }, { onConflict: "id" });
+        } catch (profileSyncErr) {
+          console.warn("Profile sync before payment notice:", profileSyncErr);
+        }
+
         // 3. INSERT OR UPSERT INTO PAYMENTS TABLE
         const { data: paymentRecord, error: insertError } = await supabase
           .from("payments")
@@ -218,7 +236,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       } catch (err) {
         console.error("Payment submission error:", err);
-        alert("Error submitting payment: " + (err.message || "Please check details."));
+        const errMsg = err.message || "";
+        if (errMsg.includes("payments_user_id_fkey") || errMsg.includes("foreign key")) {
+          alert("⚠️ Database Link Error: Your student profile record was not found in the database. Please run the SQL fix in your Supabase SQL Editor to backfill user profiles and restore the database links.");
+        } else {
+          alert("Error submitting payment: " + (errMsg || "Please check details."));
+        }
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<span>Submit Payment for Approval</span>`;
       }

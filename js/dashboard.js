@@ -43,29 +43,44 @@ document.addEventListener("DOMContentLoaded", async () => {
   initRealtimeStatusSubscription();
 });
 
-// Fetch Profile from Supabase
+// Fetch Profile from Supabase (with self-healing fallback)
 async function fetchStudentProfile() {
   const supabase = getSupabase();
-  const { data: profile, error } = await supabase
+  let { data: profile, error } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", currentStudent.id)
-    .single();
+    .maybeSingle();
 
-  if (error || !profile) {
-    console.warn("Profile fetch issue, creating basic entry:", error);
-    currentProfile = {
+  if (!profile) {
+    console.warn("Profile not found in profiles table, self-healing record for user:", currentStudent.id);
+    const newProfileData = {
       id: currentStudent.id,
-      full_name: currentStudent.user_metadata?.full_name || "Student",
+      full_name: currentStudent.user_metadata?.full_name || (currentStudent.email ? currentStudent.email.split("@")[0] : "Student"),
       email: currentStudent.email,
-      mobile: currentStudent.user_metadata?.mobile || "",
-      gender: currentStudent.user_metadata?.gender || "male",
+      mobile: currentStudent.user_metadata?.mobile || null,
+      gender: currentStudent.user_metadata?.gender || "prefer_not_to_say",
       consent_agreed: false,
-      avatar_url: "assets/avatars/av1.svg"
+      avatar_url: "assets/avatars/av1.svg",
+      avatar_type: "preset"
     };
-  } else {
-    currentProfile = profile;
+
+    // Attempt to insert/upsert into public.profiles
+    const { data: healedProfile, error: healErr } = await supabase
+      .from("profiles")
+      .upsert(newProfileData, { onConflict: "id" })
+      .select()
+      .maybeSingle();
+
+    if (!healErr && healedProfile) {
+      profile = healedProfile;
+    } else {
+      console.warn("Could not auto-insert profile into profiles table:", healErr);
+      profile = newProfileData;
+    }
   }
+
+  currentProfile = profile;
 
   // Update UI Elements
   document.getElementById("nav-user-name").textContent = currentProfile.full_name || "Student";
@@ -313,11 +328,17 @@ function initConsentScrollEnforcement() {
       const supabase = getSupabase();
       const { error } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          id: currentStudent.id,
+          full_name: (currentProfile && currentProfile.full_name) || currentStudent.user_metadata?.full_name || (currentStudent.email ? currentStudent.email.split("@")[0] : "Student"),
+          email: currentStudent.email,
+          mobile: (currentProfile && currentProfile.mobile) || currentStudent.user_metadata?.mobile || null,
+          gender: (currentProfile && currentProfile.gender) || currentStudent.user_metadata?.gender || "prefer_not_to_say",
+          avatar_url: (currentProfile && currentProfile.avatar_url) || "assets/avatars/av1.svg",
+          avatar_type: "preset",
           consent_agreed: true,
           consent_agreed_at: new Date().toISOString()
-        })
-        .eq("id", currentStudent.id);
+        }, { onConflict: "id" });
 
       if (error) throw error;
 
