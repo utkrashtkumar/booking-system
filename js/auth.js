@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const signupForm = document.getElementById("signup-form");
   const authAlert = document.getElementById("auth-alert");
   const mobileError = document.getElementById("mobile-duplicate-error");
+  const emailDuplicateError = document.getElementById("email-duplicate-error");
   const emailVerifyModal = document.getElementById("email-verify-modal");
   const verifyModalEmail = document.getElementById("verify-modal-email");
   const modalToLoginBtn = document.getElementById("modal-to-login-btn");
@@ -120,12 +121,120 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
+  // DUPLICATE REGISTRATION VERIFICATION (Email & Mobile)
+  // ==========================================
+  async function checkRegistration(emailToCheck, mobileToCheck) {
+    let emailFound = false;
+    let mobileFound = false;
+
+    // 1. Check via RPC check_user_exists (checks both auth.users & public.profiles)
+    try {
+      const { data: rpcData, error: rpcErr } = await supabase.rpc("check_user_exists", {
+        lookup_email: emailToCheck ? emailToCheck.trim().toLowerCase() : "",
+        lookup_mobile: mobileToCheck ? mobileToCheck.trim() : ""
+      });
+
+      if (!rpcErr && rpcData) {
+        return {
+          emailExists: Boolean(rpcData.email_exists),
+          mobileExists: Boolean(rpcData.mobile_exists)
+        };
+      }
+    } catch (e) {
+      console.warn("RPC check_user_exists note:", e);
+    }
+
+    // 2. Direct profiles table fallback
+    try {
+      if (emailToCheck && emailToCheck.trim()) {
+        const { data: eData } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", emailToCheck.trim().toLowerCase())
+          .maybeSingle();
+        if (eData) emailFound = true;
+      }
+
+      if (mobileToCheck && mobileToCheck.trim()) {
+        const { data: mData } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("mobile", mobileToCheck.trim())
+          .maybeSingle();
+        if (mData) mobileFound = true;
+      }
+    } catch (e) {
+      console.warn("Profiles duplicate check fallback note:", e);
+    }
+
+    return {
+      emailExists: emailFound,
+      mobileExists: mobileFound
+    };
+  }
+
+  // Real-time input listeners for immediate duplicate detection
+  const signupEmailInput = document.getElementById("signup-email");
+  const signupMobileInput = document.getElementById("signup-mobile");
+  let emailDebounce = null;
+  let mobileDebounce = null;
+
+  if (signupEmailInput && emailDuplicateError) {
+    signupEmailInput.addEventListener("input", () => {
+      clearTimeout(emailDebounce);
+      emailDuplicateError.style.display = "none";
+      const em = signupEmailInput.value.trim().toLowerCase();
+      if (!em || !em.includes("@") || !em.includes(".")) return;
+
+      emailDebounce = setTimeout(async () => {
+        const { emailExists } = await checkRegistration(em, "");
+        if (emailExists) {
+          emailDuplicateError.innerHTML = `⚠️ This email is already registered! <a href="#" class="inline-to-login" style="color: var(--cyan); text-decoration: underline; font-weight: 700; margin-left: 4px;">Click to Login →</a>`;
+          emailDuplicateError.style.display = "flex";
+          emailDuplicateError.querySelector(".inline-to-login")?.addEventListener("click", (evt) => {
+            evt.preventDefault();
+            switchTab("login");
+            const loginEmail = document.getElementById("login-email");
+            if (loginEmail) loginEmail.value = em;
+          });
+        } else {
+          emailDuplicateError.style.display = "none";
+        }
+      }, 500);
+    });
+  }
+
+  if (signupMobileInput && mobileError) {
+    signupMobileInput.addEventListener("input", () => {
+      clearTimeout(mobileDebounce);
+      mobileError.style.display = "none";
+      const mob = signupMobileInput.value.trim();
+      if (mob.length !== 10) return;
+
+      mobileDebounce = setTimeout(async () => {
+        const { mobileExists } = await checkRegistration("", mob);
+        if (mobileExists) {
+          mobileError.innerHTML = `⚠️ This mobile number is already registered! <a href="#" class="inline-to-login" style="color: var(--cyan); text-decoration: underline; font-weight: 700; margin-left: 4px;">Click to Login →</a>`;
+          mobileError.style.display = "flex";
+          mobileError.querySelector(".inline-to-login")?.addEventListener("click", (evt) => {
+            evt.preventDefault();
+            switchTab("login");
+          });
+        } else {
+          mobileError.style.display = "none";
+        }
+      }, 500);
+    });
+  }
+
+  // ==========================================
   // SIGN UP HANDLER
   // ==========================================
   signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearAlert();
-    mobileError.style.display = "none";
+    if (emailDuplicateError) emailDuplicateError.style.display = "none";
+    if (mobileError) mobileError.style.display = "none";
     if (passwordMatchError) passwordMatchError.style.display = "none";
 
     const name = document.getElementById("signup-name").value.trim();
@@ -169,26 +278,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span>Checking details &amp; creating account...</span>`;
+    submitBtn.innerHTML = `<span>Checking account availability...</span>`;
 
     try {
-      // 1. DUPLICATE MOBILE CHECK: Query 'profiles' table
-      const { data: existingMobile, error: mobileCheckError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("mobile", mobile)
-        .maybeSingle();
+      // 1. PRE-SIGNUP DUPLICATE CHECK (Email & Mobile)
+      const { emailExists, mobileExists } = await checkRegistration(email, mobile);
 
-      if (existingMobile) {
-        mobileError.textContent = "⚠️ This mobile number is already registered! Please switch to Login.";
-        mobileError.style.display = "flex";
-        showAlert("This mobile number is already registered. Please login to access your pass.", "error");
+      if (emailExists) {
+        if (emailDuplicateError) {
+          emailDuplicateError.innerHTML = `⚠️ This email is already registered! <a href="#" class="inline-to-login" style="color: var(--cyan); text-decoration: underline; font-weight: 700; margin-left: 4px;">Click to Login →</a>`;
+          emailDuplicateError.style.display = "flex";
+          emailDuplicateError.querySelector(".inline-to-login")?.addEventListener("click", (evt) => {
+            evt.preventDefault();
+            switchTab("login");
+            const loginEmail = document.getElementById("login-email");
+            if (loginEmail) loginEmail.value = email;
+          });
+        }
+        showAlert("⚠️ An account with this email already exists. Please switch to Login.", "error");
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<span>Create Account &amp; Verify Email</span>`;
         return;
       }
 
-      // 2. SUPABASE AUTH SIGNUP (Handles duplicate email automatically)
+      if (mobileExists) {
+        if (mobileError) {
+          mobileError.innerHTML = `⚠️ This mobile number is already registered! <a href="#" class="inline-to-login" style="color: var(--cyan); text-decoration: underline; font-weight: 700; margin-left: 4px;">Click to Login →</a>`;
+          mobileError.style.display = "flex";
+          mobileError.querySelector(".inline-to-login")?.addEventListener("click", (evt) => {
+            evt.preventDefault();
+            switchTab("login");
+          });
+        }
+        showAlert("⚠️ This mobile number is already registered. Please login to access your pass.", "error");
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>Create Account &amp; Verify Email</span>`;
+        return;
+      }
+
+      // 2. SUPABASE AUTH SIGNUP
+      submitBtn.innerHTML = `<span>Creating account &amp; sending link...</span>`;
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -202,11 +331,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       if (authError) {
-        // Friendly duplicate email message
-        if (authError.message.toLowerCase().includes("already registered") || 
-            authError.message.toLowerCase().includes("user already exists")) {
+        const msg = authError.message.toLowerCase();
+        if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("already in use")) {
           showAlert("⚠️ An account with this email already exists. Please login instead.", "error");
-        } else if (authError.message.toLowerCase().includes("database error saving new user")) {
+          if (emailDuplicateError) {
+            emailDuplicateError.innerHTML = `⚠️ This email is already registered! <a href="#" class="inline-to-login" style="color: var(--cyan); text-decoration: underline; font-weight: 700; margin-left: 4px;">Click to Login →</a>`;
+            emailDuplicateError.style.display = "flex";
+            emailDuplicateError.querySelector(".inline-to-login")?.addEventListener("click", (evt) => {
+              evt.preventDefault();
+              switchTab("login");
+              const loginEmail = document.getElementById("login-email");
+              if (loginEmail) loginEmail.value = email;
+            });
+          }
+        } else if (msg.includes("database error saving new user")) {
           showAlert("⚠️ Database trigger error: Please run fix-database-error.sql in your Supabase SQL Editor to resolve.", "error");
         } else {
           showAlert(authError.message, "error");
@@ -216,7 +354,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      // 3. Insert or update user profile record in profiles table
+      // 3. CRITICAL: Detect Supabase silent duplicate email (identities array is empty)
+      if (authData && authData.user && Array.isArray(authData.user.identities) && authData.user.identities.length === 0) {
+        showAlert("⚠️ An account with this email address already exists! Please switch to Login.", "error");
+        if (emailDuplicateError) {
+          emailDuplicateError.innerHTML = `⚠️ This email is already registered! <a href="#" class="inline-to-login" style="color: var(--cyan); text-decoration: underline; font-weight: 700; margin-left: 4px;">Click to Login →</a>`;
+          emailDuplicateError.style.display = "flex";
+          emailDuplicateError.querySelector(".inline-to-login")?.addEventListener("click", (evt) => {
+            evt.preventDefault();
+            switchTab("login");
+            const loginEmail = document.getElementById("login-email");
+            if (loginEmail) loginEmail.value = email;
+          });
+        }
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>Create Account &amp; Verify Email</span>`;
+        return;
+      }
+
+      // 4. Insert or update user profile record in profiles table
       if (authData && authData.user) {
         lastSignedUpEmail = email;
         const { error: profileError } = await supabase.from("profiles").upsert({
@@ -233,7 +389,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       }
 
-      // 4. SHOW VERIFICATION EMAIL MODAL POPUP
+      // 5. SHOW VERIFICATION EMAIL MODAL POPUP
       verifyModalEmail.textContent = email;
       emailVerifyModal.classList.add("active");
 

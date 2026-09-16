@@ -203,3 +203,52 @@ DROP POLICY IF EXISTS "Allow admin update pass" ON public.passes;
 CREATE POLICY "Allow admin update pass"
 ON public.passes FOR UPDATE
 USING (public.is_admin());
+
+-- 9. Allow anonymous users to check if email/mobile is already registered
+DROP POLICY IF EXISTS "Allow anon check registered users" ON public.profiles;
+CREATE POLICY "Allow anon check registered users"
+ON public.profiles FOR SELECT
+TO anon
+USING (TRUE);
+
+-- 10. RPC FUNCTION: Instant check if email or mobile is already registered
+-- Checks both public.profiles AND auth.users table safely
+CREATE OR REPLACE FUNCTION public.check_user_exists(lookup_email TEXT, lookup_mobile TEXT)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  email_exists BOOLEAN := FALSE;
+  mobile_exists BOOLEAN := FALSE;
+  clean_mobile TEXT;
+  clean_email TEXT;
+BEGIN
+  clean_email := LOWER(TRIM(COALESCE(lookup_email, '')));
+  clean_mobile := TRIM(COALESCE(lookup_mobile, ''));
+
+  IF clean_email != '' THEN
+    SELECT EXISTS (
+      SELECT 1 FROM public.profiles WHERE LOWER(email) = clean_email
+      UNION
+      SELECT 1 FROM auth.users WHERE LOWER(email) = clean_email
+    ) INTO email_exists;
+  END IF;
+
+  IF clean_mobile != '' THEN
+    SELECT EXISTS (
+      SELECT 1 FROM public.profiles WHERE mobile = clean_mobile
+      UNION
+      SELECT 1 FROM auth.users WHERE raw_user_meta_data->>'mobile' = clean_mobile
+    ) INTO mobile_exists;
+  END IF;
+
+  RETURN json_build_object(
+    'email_exists', email_exists,
+    'mobile_exists', mobile_exists
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.check_user_exists(TEXT, TEXT) TO anon, authenticated, service_role;
