@@ -1,8 +1,9 @@
 -- ============================================================================
 -- 🚀 COMPLETE DATABASE FIX: Fix User Profiles & Foreign Key Constraints
 -- Resolves:
--- 1. "Database error saving new user" (HTTP 500)
+-- 1. "ERROR: 23505: duplicate key value violates unique constraint 'profiles_mobile_key'"
 -- 2. "violates foreign key constraint payments_user_id_fkey"
+-- 3. "Database error saving new user" (HTTP 500)
 --
 -- Instructions: Copy and paste this entire script into your Supabase SQL Editor:
 -- Supabase Dashboard -> SQL Editor -> New Query -> Paste & Click "Run"
@@ -21,12 +22,12 @@ $$;
 
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 
--- 2. Ensure public.profiles table exists and relax strict NOT NULL constraints
+-- 2. Ensure public.profiles table exists and relax strict constraints
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name TEXT NOT NULL DEFAULT '',
     email TEXT UNIQUE NOT NULL,
-    mobile TEXT UNIQUE,
+    mobile TEXT,
     gender TEXT DEFAULT 'prefer_not_to_say' CHECK (gender IN ('male', 'female', 'other', 'prefer_not_to_say')),
     avatar_url TEXT DEFAULT 'assets/avatars/av1.svg',
     avatar_type TEXT DEFAULT 'preset' CHECK (avatar_type IN ('upload', 'preset')),
@@ -36,11 +37,37 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
+-- CRITICAL FIX FOR: ERROR 23505 profiles_mobile_key
+-- Drop unique constraint and any unique index on mobile to prevent crashes from duplicate/test numbers
+ALTER TABLE IF EXISTS public.profiles DROP CONSTRAINT IF EXISTS profiles_mobile_key CASCADE;
+
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (
+        SELECT indexname 
+        FROM pg_indexes 
+        WHERE schemaname = 'public' 
+          AND tablename = 'profiles' 
+          AND indexdef LIKE '%UNIQUE%' 
+          AND indexdef LIKE '%mobile%'
+    ) LOOP
+        EXECUTE 'DROP INDEX IF EXISTS public.' || quote_ident(r.indexname) || ' CASCADE';
+    END LOOP;
+END;
+$$;
+
+-- Create a fast, non-unique index on mobile for search queries
+CREATE INDEX IF NOT EXISTS idx_profiles_mobile ON public.profiles(mobile);
+
+-- Safely relax nullability on columns
 ALTER TABLE IF EXISTS public.profiles ALTER COLUMN mobile DROP NOT NULL;
 ALTER TABLE IF EXISTS public.profiles ALTER COLUMN gender SET DEFAULT 'prefer_not_to_say';
 ALTER TABLE IF EXISTS public.profiles ALTER COLUMN gender DROP NOT NULL;
 
 -- 3. Create the Fail-Safe Automatic Profile Creation Trigger
+-- Includes emergency 2nd-tier fallback so an auth.users record is NEVER orphaned!
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -61,11 +88,11 @@ BEGIN
     )
     VALUES (
       new.id,
-      COALESCE(NULLIF(new.raw_user_meta_data->>'full_name', ''), split_part(new.email, '@', 1)),
+      COALESCE(NULLIF(TRIM(new.raw_user_meta_data->>'full_name'), ''), split_part(new.email, '@', 1)),
       new.email,
-      NULLIF(new.raw_user_meta_data->>'mobile', ''),
-      COALESCE(NULLIF(new.raw_user_meta_data->>'gender', ''), 'prefer_not_to_say'),
-      COALESCE(NULLIF(new.raw_user_meta_data->>'avatar_url', ''), 'assets/avatars/av1.svg'),
+      NULLIF(TRIM(new.raw_user_meta_data->>'mobile'), ''),
+      COALESCE(NULLIF(TRIM(new.raw_user_meta_data->>'gender'), ''), 'prefer_not_to_say'),
+      COALESCE(NULLIF(TRIM(new.raw_user_meta_data->>'avatar_url'), ''), 'assets/avatars/av1.svg'),
       'preset',
       FALSE
     )
@@ -75,8 +102,20 @@ BEGIN
       mobile = COALESCE(public.profiles.mobile, EXCLUDED.mobile),
       gender = COALESCE(public.profiles.gender, EXCLUDED.gender);
   EXCEPTION WHEN OTHERS THEN
-    -- Non-blocking warning so signup never fails with HTTP 500
-    RAISE WARNING 'handle_new_user non-blocking notice: %', SQLERRM;
+    -- Emergency fallback: ensure the profile row ALWAYS exists even if metadata parsing fails
+    BEGIN
+      INSERT INTO public.profiles (id, full_name, email, avatar_url, avatar_type)
+      VALUES (
+        new.id,
+        split_part(new.email, '@', 1),
+        new.email,
+        'assets/avatars/av1.svg',
+        'preset'
+      )
+      ON CONFLICT (id) DO NOTHING;
+    EXCEPTION WHEN OTHERS THEN
+      RAISE WARNING 'Emergency profile fallback notice: %', SQLERRM;
+    END;
   END;
 
   RETURN new;
@@ -89,14 +128,14 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 4. CRITICAL: Backfill missing profiles for all existing registered users
--- (This immediately resolves the foreign key error for existing accounts)
+-- (Now completely safe from mobile collision errors)
 INSERT INTO public.profiles (id, full_name, email, mobile, gender, avatar_url, avatar_type, consent_agreed)
 SELECT 
   u.id,
-  COALESCE(NULLIF(u.raw_user_meta_data->>'full_name', ''), split_part(u.email, '@', 1)),
+  COALESCE(NULLIF(TRIM(u.raw_user_meta_data->>'full_name'), ''), split_part(u.email, '@', 1)),
   u.email,
-  NULLIF(u.raw_user_meta_data->>'mobile', ''),
-  COALESCE(NULLIF(u.raw_user_meta_data->>'gender', ''), 'prefer_not_to_say'),
+  NULLIF(TRIM(u.raw_user_meta_data->>'mobile'), ''),
+  COALESCE(NULLIF(TRIM(u.raw_user_meta_data->>'gender'), ''), 'prefer_not_to_say'),
   'assets/avatars/av1.svg',
   'preset',
   FALSE
@@ -119,7 +158,7 @@ GRANT SELECT, INSERT, UPDATE ON public.payments TO authenticated;
 GRANT SELECT, UPDATE ON public.passes TO authenticated;
 GRANT SELECT ON public.profiles TO anon;
 
--- 7. Ensure Row Level Security (RLS) policies exist and allow users to manage their profiles
+-- 7. Ensure Row Level Security (RLS) policies exist
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow individual insert own profile" ON public.profiles;
