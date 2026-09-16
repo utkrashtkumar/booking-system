@@ -4,7 +4,7 @@ Official digital entry pass and event management platform for **MCA Freshers 202
 
 Organized by the **MCA Batch of 2025–2027** welcoming the incoming **MCA Batch of 2026–2028**.
 
-Hosted live at: **[https://utkrasht.in](https://utkrasht.in)**
+
 
 ---
 
@@ -46,7 +46,7 @@ Hosted live at: **[https://utkrasht.in](https://utkrasht.in)**
 - **Backend & Database:** [Supabase](https://supabase.com) (PostgreSQL, Supabase Auth, Row Level Security, Storage Buckets).
 - **QR Code Engine:** `qrcode` with custom styled module drawers & PhonePe center badge.
 - **Gate Scanner:** `html5-qrcode` library for real-time camera scanning.
-- **Hosting & Edge Deployment:** [Vercel](https://vercel.com) with custom domain `utkrasht.in`.
+- **Hosting & Edge Deployment:** [Vercel](https://vercel.com) 
 
 ---
 
@@ -116,4 +116,4 @@ Hosted live at: **[https://utkrasht.in](https://utkrasht.in)**
 - **Department:** Department of Master of Computer Applications (MCA)
 - **Institution:** Institute of Engineering & Technology (IET), Sitapur Road, Lucknow – 226021
 - **Organizers:** MCA Batch of 2025–2027
-- **Helplines:** +91 8922921012 • +91 8006770753
+
