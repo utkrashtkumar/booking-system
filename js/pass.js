@@ -1,6 +1,6 @@
 /**
  * IET LUCKNOW - MCA FRESHERS 2026 PLATFORM
- * Entry Pass Generator & Downloader Module (PDF, Image, QR Code)
+ * Entry Pass Generator & Downloader Module (High-Reliability & Mobile-Optimized)
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -20,12 +20,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const utrDisplay = document.getElementById("pass-utr-display");
   const issuedDate = document.getElementById("pass-issued-date");
   const qrContainer = document.getElementById("qrcode-container");
-
   const downloadPngBtn = document.getElementById("download-png-btn");
-  const downloadPdfBtn = document.getElementById("download-pdf-btn");
 
   if (!supabase) {
-    alert("Supabase SDK not loaded.");
+    if (loadingState) loadingState.style.display = "none";
+    if (deniedState) deniedState.style.display = "block";
+    if (deniedReason) deniedReason.textContent = "Supabase SDK not loaded. Please check your internet connection.";
     return;
   }
 
@@ -39,12 +39,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const userId = session.user.id;
 
-    // 2. Query Profile
-    const { data: profile, error: profileError } = await supabase
+    // 2. Query Profile (Safe query)
+    const { data: profile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
-      .single();
+      .maybeSingle();
 
     // 3. Query Payment
     const { data: payment, error: paymentError } = await supabase
@@ -54,25 +54,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       .maybeSingle();
 
     if (!payment) {
-      loadingState.style.display = "none";
-      deniedState.style.display = "block";
-      deniedReason.textContent = "You have not submitted your ₹99 payment yet. Please complete payment on your dashboard.";
+      if (loadingState) loadingState.style.display = "none";
+      if (deniedState) deniedState.style.display = "block";
+      if (deniedReason) deniedReason.textContent = "You have not submitted your ₹99 payment yet. Please complete payment on your dashboard.";
       return;
     }
 
     if (payment.status !== "approved") {
-      loadingState.style.display = "none";
-      deniedState.style.display = "block";
+      if (loadingState) loadingState.style.display = "none";
+      if (deniedState) deniedState.style.display = "block";
       if (payment.status === "rejected") {
-        deniedReason.innerHTML = `Your payment was rejected. Reason: <strong>${payment.admin_note || "Invalid transaction"}</strong>. Please resubmit on your dashboard.`;
+        if (deniedReason) deniedReason.innerHTML = `Your payment was rejected. Reason: <strong>${payment.admin_note || "Invalid transaction"}</strong>. Please resubmit on your dashboard.`;
       } else {
-        deniedReason.textContent = "Your payment is currently pending review by the organizing committee. Passes become active once verified.";
+        if (deniedReason) deniedReason.textContent = "Your payment is currently pending review by the organizing committee. Passes become active once verified.";
       }
       return;
     }
 
     // 4. Query or Generate Pass Record
-    let { data: pass, error: passError } = await supabase
+    let { data: pass } = await supabase
       .from("passes")
       .select("*")
       .eq("user_id", userId)
@@ -81,136 +81,159 @@ document.addEventListener("DOMContentLoaded", async () => {
     // If pass record was not created during approval, create it now safely
     if (!pass) {
       const generatedCode = `IET-MCA-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const resolvedName = (profile && profile.full_name) || session.user.user_metadata?.full_name || (session.user.email ? session.user.email.split("@")[0] : "Student");
+      const resolvedMobile = (profile && profile.mobile) || payment.payment_mobile || session.user.user_metadata?.mobile || "";
+
       const qrData = JSON.stringify({
         event: "MCA_FRESHERS_2026",
         pass_code: generatedCode,
-        name: profile ? profile.full_name : session.user.email,
+        name: resolvedName,
         email: session.user.email,
-        mobile: profile ? profile.mobile : (payment.payment_mobile || ""),
+        mobile: resolvedMobile,
         utr: payment.utr_number
       });
 
-      const { data: newPass, error: createPassError } = await supabase
-        .from("passes")
-        .insert({
-          user_id: userId,
-          payment_id: payment.id,
+      try {
+        const { data: newPass, error: createPassError } = await supabase
+          .from("passes")
+          .insert({
+            user_id: userId,
+            payment_id: payment.id,
+            pass_code: generatedCode,
+            qr_payload: qrData,
+            issued_at: new Date().toISOString()
+          })
+          .select()
+          .maybeSingle();
+
+        pass = newPass || {
           pass_code: generatedCode,
           qr_payload: qrData,
           issued_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      pass = newPass || {
-        pass_code: generatedCode,
-        qr_payload: qrData,
-        issued_at: new Date().toISOString()
-      };
+        };
+      } catch (insertPassErr) {
+        console.warn("Pass insert warning:", insertPassErr);
+        pass = {
+          pass_code: generatedCode,
+          qr_payload: qrData,
+          issued_at: new Date().toISOString()
+        };
+      }
     }
 
-    // 5. Populate Pass UI
-    studentName.textContent = profile ? profile.full_name : (session.user.user_metadata?.full_name || "Student");
-    studentEmail.textContent = session.user.email;
-    studentMobile.textContent = profile ? `+91 ${profile.mobile}` : (payment.payment_mobile ? `+91 ${payment.payment_mobile}` : "--");
-    studentGender.textContent = profile && profile.gender ? (profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1)) : "Not specified";
+    // 5. Populate Pass UI Safely (Ensures reliable rendering on mobile & desktop)
+    const displayName = (profile && profile.full_name) || session.user.user_metadata?.full_name || (session.user.email ? session.user.email.split("@")[0] : "Student");
+    const displayEmail = (profile && profile.email) || session.user.email || "--";
+    let rawMobile = (profile && profile.mobile) || (payment && payment.payment_mobile) || session.user.user_metadata?.mobile || "";
+    let displayMobile = "--";
+    if (rawMobile) {
+      displayMobile = rawMobile.startsWith("+91") ? rawMobile : `+91 ${rawMobile}`;
+    }
+
+    let displayGender = "Not specified";
+    const rawGender = (profile && profile.gender) || session.user.user_metadata?.gender;
+    if (rawGender && rawGender !== "prefer_not_to_say") {
+      displayGender = rawGender.charAt(0).toUpperCase() + rawGender.slice(1);
+    }
+
+    if (studentName) studentName.textContent = displayName;
+    if (studentEmail) studentEmail.textContent = displayEmail;
+    if (studentMobile) studentMobile.textContent = displayMobile;
+    if (studentGender) studentGender.textContent = displayGender;
     
-    passCodeDisplay.textContent = pass.pass_code;
-    utrDisplay.textContent = payment.utr_number;
-    issuedDate.textContent = `Issued: ${new Date(pass.issued_at || Date.now()).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}`;
-
-    if (profile && profile.avatar_url) {
-      avatarImg.src = profile.avatar_url;
-    } else {
-      avatarImg.src = "assets/avatars/av1.svg";
+    if (passCodeDisplay) passCodeDisplay.textContent = pass.pass_code || "--";
+    if (utrDisplay) utrDisplay.textContent = payment.utr_number || "--";
+    if (issuedDate) {
+      const dateVal = pass.issued_at || payment.approved_at || Date.now();
+      issuedDate.textContent = `Issued: ${new Date(dateVal).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}`;
     }
 
-    // 6. Generate QR Code
-    qrContainer.innerHTML = "";
-    const qrPayloadString = pass.qr_payload || JSON.stringify({
-      event: "MCA_FRESHERS_2026",
-      pass_code: pass.pass_code,
-      name: studentName.textContent,
-      utr: payment.utr_number
-    });
+    if (avatarImg) {
+      if (profile && profile.avatar_url) {
+        avatarImg.src = profile.avatar_url;
+      } else {
+        avatarImg.src = "assets/avatars/av1.svg";
+      }
+    }
 
-    new QRCode(qrContainer, {
-      text: qrPayloadString,
-      width: 170,
-      height: 170,
-      colorDark: "#000000",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
-
-    // Show Pass Card
-    loadingState.style.display = "none";
-    passWrapper.style.display = "block";
-
-    // 7. DOWNLOAD AS PNG (html2canvas)
-    downloadPngBtn.addEventListener("click", () => {
-      const passElement = document.getElementById("pass-printable-card");
-      downloadPngBtn.disabled = true;
-      downloadPngBtn.textContent = "Generating Image...";
-
-      html2canvas(passElement, {
-        scale: 2, // High resolution
-        useCORS: true,
-        backgroundColor: null
-      }).then((canvas) => {
-        const link = document.createElement("a");
-        link.download = `MCA_Freshers_2026_Pass_${pass.pass_code}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        downloadPngBtn.disabled = false;
-        downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
-      }).catch(err => {
-        console.error("PNG export error:", err);
-        alert("Failed to export image: " + err.message);
-        downloadPngBtn.disabled = false;
-        downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
+    // 6. Generate QR Code with Mobile-Resilient Fallback
+    if (qrContainer) {
+      qrContainer.innerHTML = "";
+      const qrPayloadString = pass.qr_payload || JSON.stringify({
+        event: "MCA_FRESHERS_2026",
+        pass_code: pass.pass_code,
+        name: displayName,
+        utr: payment.utr_number
       });
-    });
 
-    // 8. DOWNLOAD AS PDF (jsPDF + html2canvas)
-    downloadPdfBtn.addEventListener("click", () => {
-      const passElement = document.getElementById("pass-printable-card");
-      downloadPdfBtn.disabled = true;
-      downloadPdfBtn.textContent = "Generating PDF...";
+      let qrRendered = false;
 
-      html2canvas(passElement, {
-        scale: 2,
-        useCORS: true
-      }).then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-          orientation: "portrait",
-          unit: "mm",
-          format: "a5"
+      if (typeof QRCode !== "undefined") {
+        try {
+          new QRCode(qrContainer, {
+            text: qrPayloadString,
+            width: 170,
+            height: 170,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+          qrRendered = true;
+        } catch (qrErr) {
+          console.warn("QRCode canvas error, using image fallback:", qrErr);
+        }
+      }
+
+      // Fallback for mobile if QRCode JS library didn't load from CDN
+      if (!qrRendered) {
+        const fallbackQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=4&data=${encodeURIComponent(qrPayloadString)}`;
+        qrContainer.innerHTML = `<img src="${fallbackQrUrl}" alt="QR Entry Pass Code" style="width: 170px; height: 170px; display: block; margin: 0 auto; border-radius: 8px;">`;
+      }
+    }
+
+    // 7. Reveal the Pass Card & Hide Loading
+    if (loadingState) loadingState.style.display = "none";
+    if (deniedState) deniedState.style.display = "none";
+    if (passWrapper) passWrapper.style.display = "block";
+
+    // 8. DOWNLOAD AS PNG (html2canvas)
+    if (downloadPngBtn) {
+      downloadPngBtn.addEventListener("click", () => {
+        const passElement = document.getElementById("pass-printable-card");
+        downloadPngBtn.disabled = true;
+        downloadPngBtn.textContent = "Generating Image...";
+
+        if (typeof html2canvas === "undefined") {
+          alert("Image export tool is loading. Please try again in a moment.");
+          downloadPngBtn.disabled = false;
+          downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
+          return;
+        }
+
+        html2canvas(passElement, {
+          scale: 2, // High resolution
+          useCORS: true,
+          backgroundColor: null
+        }).then((canvas) => {
+          const link = document.createElement("a");
+          link.download = `MCA_Freshers_2026_Pass_${pass.pass_code}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          downloadPngBtn.disabled = false;
+          downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
+        }).catch(err => {
+          console.error("PNG export error:", err);
+          alert("Failed to export image: " + err.message);
+          downloadPngBtn.disabled = false;
+          downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
         });
-
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-        pdf.addImage(imgData, "PNG", 0, 10, pdfWidth, pdfHeight);
-        pdf.save(`MCA_Freshers_2026_Pass_${pass.pass_code}.pdf`);
-
-        downloadPdfBtn.disabled = false;
-        downloadPdfBtn.innerHTML = `<span>📄 Download PDF</span>`;
-      }).catch(err => {
-        console.error("PDF export error:", err);
-        alert("Failed to generate PDF: " + err.message);
-        downloadPdfBtn.disabled = false;
-        downloadPdfBtn.innerHTML = `<span>📄 Download PDF</span>`;
       });
-    });
+    }
 
   } catch (err) {
     console.error("Pass generation error:", err);
-    loadingState.style.display = "none";
-    deniedState.style.display = "block";
-    deniedReason.textContent = "An error occurred while loading your pass: " + err.message;
+    if (loadingState) loadingState.style.display = "none";
+    if (deniedState) deniedState.style.display = "block";
+    if (deniedReason) deniedReason.textContent = "An error occurred while loading your pass: " + err.message;
   }
 });

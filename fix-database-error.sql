@@ -155,10 +155,10 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, service_role;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.payments TO authenticated;
-GRANT SELECT, UPDATE ON public.passes TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.passes TO authenticated;
 GRANT SELECT ON public.profiles TO anon;
 
--- 7. Ensure Row Level Security (RLS) policies exist
+-- 7. Ensure Row Level Security (RLS) policies exist for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow individual insert own profile" ON public.profiles;
@@ -175,3 +175,31 @@ DROP POLICY IF EXISTS "Allow individual read own profile or admin read all" ON p
 CREATE POLICY "Allow individual read own profile or admin read all"
 ON public.profiles FOR SELECT
 USING (auth.uid() = id OR public.is_admin());
+
+-- 8. Ensure Row Level Security (RLS) policies exist for passes
+ALTER TABLE public.passes ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow individual read own pass or admin read all" ON public.passes;
+CREATE POLICY "Allow individual read own pass or admin read all"
+ON public.passes FOR SELECT
+USING (auth.uid() = user_id OR public.is_admin());
+
+DROP POLICY IF EXISTS "Allow admin or approved student insert pass" ON public.passes;
+DROP POLICY IF EXISTS "Allow admin insert pass" ON public.passes;
+CREATE POLICY "Allow admin or approved student insert pass"
+ON public.passes FOR INSERT
+WITH CHECK (
+  public.is_admin() 
+  OR (
+    auth.uid() = user_id 
+    AND EXISTS (
+      SELECT 1 FROM public.payments 
+      WHERE user_id = auth.uid() AND status = 'approved'
+    )
+  )
+);
+
+DROP POLICY IF EXISTS "Allow admin update pass" ON public.passes;
+CREATE POLICY "Allow admin update pass"
+ON public.passes FOR UPDATE
+USING (public.is_admin());

@@ -105,7 +105,7 @@
           </div>
 
           <!-- THE PASS COMPONENT -->
-          <div id="pass-printable-card" class="card" style="padding: 2rem; border: 2px solid var(--gold); box-shadow: 0 15px 45px rgba(245, 158, 11, 0.2); position: relative; background: linear-gradient(180deg, var(--bg-card) 0%, rgba(245, 158, 11, 0.04) 100%);">
+          <div id="pass-printable-card" class="card" style="padding: 1.5rem; border: 2px solid var(--gold); box-shadow: 0 15px 45px rgba(245, 158, 11, 0.2); position: relative; background: linear-gradient(180deg, var(--bg-card) 0%, rgba(245, 158, 11, 0.04) 100%);">
             
             <!-- Watermark Background Text -->
             <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 4.5rem; font-weight: 900; color: var(--text-main); opacity: 0.03; pointer-events: none; white-space: nowrap; font-family: 'Space Grotesk', sans-serif;">
@@ -113,11 +113,11 @@
             </div>
 
             <!-- College Header -->
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
-              <div style="display: flex; align-items: center; gap: 0.85rem;">
-                <img src="Ietlogo.png" alt="IET Lucknow Logo" style="width: 52px; height: 52px; border-radius: 50%; background: #ffffff; padding: 2px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 1.25rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 220px;">
+                <img src="Ietlogo.png" alt="IET Lucknow Logo" style="width: 52px; height: 52px; border-radius: 50%; background: #ffffff; padding: 2px; box-shadow: 0 0 10px rgba(0,0,0,0.2); flex-shrink: 0;">
                 <div>
-                  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700;">INSTITUTE OF ENGINEERING &amp; TECHNOLOGY, LUCKNOW</div>
+                  <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700;">INSTITUTE OF ENGINEERING &amp; TECHNOLOGY, LUCKNOW</div>
                   <div style="font-size: 1.2rem; font-family: 'Space Grotesk', sans-serif; font-weight: 800; color: var(--text-main);">
                     MCA FRESHERS <span class="gradient-text">2026</span>
                   </div>
@@ -206,9 +206,9 @@
     </footer>
   </div>
 
-  <!-- Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/pass.js"></script>
+  <!-- Scripts (Cache-Busted for instant mobile updates) -->
+  <script src="js/config.js?v=2026.5"></script>
+  <script src="js/theme.js?v=2026.5"></script>
+  <script src="js/pass.js?v=2026.5"></script>
 </body>
 </html>
