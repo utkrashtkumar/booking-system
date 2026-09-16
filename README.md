@@ -106,7 +106,7 @@ Organized by the **MCA Batch of 2025–2027** welcoming the incoming **MCA Batch
 1. Create a Supabase project at [supabase.com](https://supabase.com).
 2. Open the **SQL Editor** in your Supabase dashboard and execute the script inside [`supabase-setup.sql`](supabase-setup.sql).
 3. Paste the contents of [`supabase-email-confirm-signup.html`](supabase-email-confirm-signup.html) and [`supabase-email-reset-password.html`](supabase-email-reset-password.html) into **Authentication ➔ Email Templates**.
-4. In **Authentication ➔ URL Configuration**, configure the Site URL and Redirect URLs for `https://utkrasht.in`.
+
 
 ---
 
