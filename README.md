@@ -32,7 +32,6 @@ Organized by the **MCA Batch of 2025–2027** welcoming the incoming **MCA Batch
 - **🎟️ Digital Pass Generator (`pass.html`):**
   - Premium printable and downloadable event entry pass with unique ticket number, student details, security watermark, and scannable gate verification QR code.
 - **🛡️ Admin Management & Gate QR Scanner (`admin.html`):**
-  - Role-protected Super Admin console for `utkrasht@gmail.com`.
   - Real-time KPI counters (Registrations, Consents, Submissions, Passes Issued).
   - Live embedded camera QR scanner for venue gate check-in to prevent pass duplication.
   - Modal-based pass rejection with 1-click presets (Strict Misconduct Notice for fake payments, Bank Mismatch, Blurry Receipt).
