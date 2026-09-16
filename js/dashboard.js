@@ -219,7 +219,7 @@ function renderPaymentStatus(payment) {
       iconBox.textContent = "🚨";
 
       heading.innerHTML = `<span class="blinking-red-name" style="font-size: 1.45rem;">🚨 PASS REJECTED: NOTICE OF MISCONDUCT</span>`;
-      desc.innerHTML = `<strong style="color: var(--error);">Official disciplinary warning issued:</strong> Fake or fraudulent payment submissions violate Institute Code of Conduct Rule #6. Your record has been flagged with the MCA Batch of 2025–2027 Organizing Committee &amp; College Authorities.`;
+      desc.innerHTML = `<strong style="color: var(--error);">Official disciplinary warning issued:</strong> Fake or fraudulent payment submissions violate event code of conduct rules. Your record has been flagged for disciplinary action by organizing committee.`;
 
       badge.className = "badge badge-danger";
       badge.textContent = "REJECTED • MISCONDUCT FLAGGED";

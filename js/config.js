@@ -45,10 +45,10 @@ const CONFIG = {
 
   // Terms & Conditions list
   TERMS: [
-    "🚫 STRICTLY NO ALCOHOL & SUBSTANCE USE: Bringing, consuming, or being under the influence of alcohol, drugs, or any intoxicants is strictly prohibited. Violators will face immediate expulsion, police reporting, and disciplinary action by the college.",
+    "🚫 STRICTLY NO ALCOHOL & SUBSTANCE USE: Bringing, consuming, or being under the influence of alcohol, drugs, or any intoxicants is strictly prohibited. Violators will face immediate expulsion, forfeiture of pass without refund, and disciplinary action by organizing committee.",
     "👔 DRESS CODE & PROFESSIONAL CONDUCT: Attendees must adhere to decent, smart casual or formal dress etiquette. Offensive slogans, inappropriate attire, and indecent behavior will not be tolerated.",
     "🤝 RESPECT & DECORUM: Treat all juniors, seniors, professors, and venue staff with utmost respect and courtesy. Maintain high professional standards at all times.",
-    "🚷 ZERO TOLERANCE FOR HARASSMENT: Eve-teasing, ragging, non-consensual physical contact, verbal abuse, or harassment in any form will lead to immediate confiscation of pass, permanent eviction, and official FIR filing.",
+    "🚷 ZERO TOLERANCE FOR HARASSMENT: Eve-teasing, ragging, non-consensual physical contact, verbal abuse, or harassment in any form will lead to immediate confiscation of pass, permanent eviction, and disciplinary action by organizing committee.",
     "📸 PHOTOGRAPHY GUIDELINES: Photography is welcome in designated event photo booths and main stage areas. Taking unconsented, candid, or intrusive pictures/videos of fellow students is strictly prohibited.",
     "🎟️ PERSONAL & NON-TRANSFERABLE PASS: Each entry pass is strictly unique to the registered student with their verified roll, photo, and UTR. Attempting to sell, lend, forge, or duplicate a pass will result in cancellation without refund.",
     "🏛️ ORGANIZERS' AUTHORITY: The MCA Batch of 2025–2027 Organizing Committee reserves the sole right to verify identity at the gate and deny entry to any individual violating venue protocols.",

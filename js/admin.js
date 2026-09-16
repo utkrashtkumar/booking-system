@@ -492,7 +492,7 @@ window.approvePayment = async function (paymentId, userId, utrNumber, studentNam
 let currentRejectData = null;
 
 const REJECT_PRESETS = {
-  fake: "🚨 OFFICIAL NOTICE OF MISCONDUCT & MISBEHAVIOR: You have submitted a fraudulent/fake payment screenshot or forged UTR number. Your entry pass approval is REJECTED with immediate effect. This act of severe indiscipline has been formally recorded and reported to the MCA Batch of 2025–2027 Organizing Committee & College Disciplinary Authorities. For genuine verification appeals, contact the organizing team immediately at 8922921012 / 8006770753.",
+  fake: "🚨 OFFICIAL NOTICE OF MISCONDUCT & MISBEHAVIOR: You have submitted a fraudulent/fake payment screenshot or forged UTR number. Your entry pass approval is REJECTED with immediate effect. This act of severe indiscipline has been formally recorded for disciplinary action by organizing committee. For genuine verification appeals, contact the organizing team immediately at 8922921012 / 8006770753.",
   mismatch: "⚠️ Bank Statement Verification Failed: The UTR / Transaction ID submitted was not reflected in the official bank statement (8006770753-2@ibl / Bhanu Pratap Singh). Please verify that ₹99 was deducted from your bank account and resubmit with genuine receipt, or contact coordinators.",
   blurry: "⚠️ Unclear Payment Receipt: The uploaded screenshot is cropped, blurry, or missing the bank reference number and transaction timestamp. Please re-upload a clear and complete screenshot.",
   custom: ""
