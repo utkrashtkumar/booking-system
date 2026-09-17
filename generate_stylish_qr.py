@@ -71,7 +71,7 @@ def create_stylish_upi_qr():
     # 3. Badge Banner: OFFICIAL AUTHORIZED UPI QR
     badge_x1, badge_y1, badge_x2, badge_y2 = 42, 114, W - 42, 148
     draw.rounded_rectangle([badge_x1, badge_y1, badge_x2, badge_y2], radius=17, fill=(35, 26, 12, 230), outline=(245, 158, 11, 220), width=1)
-    badge_text = "OFFICIAL AUTHORIZED UPI QR CODE • ENTRY PASS Rs 99 ONLY"
+    badge_text = "OFFICIAL AUTHORIZED UPI QR CODE • ENTRY PASS Rs 199 ONLY"
     bw = draw.textlength(badge_text, font=font_badge)
     draw.text(((W - bw) / 2, badge_y1 + 7), badge_text, fill=(245, 158, 11), font=font_badge)
 
@@ -165,10 +165,10 @@ def create_stylish_upi_qr():
     draw.text((box_x1 + 18, box_y1 + 112), "8006770753-2@ibl", fill=(56, 189, 248), font=font_mono)
 
     # Right: Amount Pill
-    amt_x = box_x2 - 195
+    amt_x = box_x2 - 205
     draw.rounded_rectangle([amt_x, box_y1 + 92, box_x2 - 18, box_y1 + 144], radius=10, fill=(35, 26, 12, 240), outline=(245, 158, 11, 220), width=1)
     draw.text((amt_x + 14, box_y1 + 97), "PASS FEE:", fill=(203, 213, 225), font=ImageFont.truetype("C:/Windows/Fonts/segoeui.ttf", 10))
-    draw.text((amt_x + 14, box_y1 + 112), "Rs 99.00 ONLY", fill=(245, 158, 11), font=font_amount)
+    draw.text((amt_x + 14, box_y1 + 112), "Rs 199.00 ONLY", fill=(245, 158, 11), font=font_amount)
 
     # Security Verification Tag
     draw.text((box_x1 + 18, box_y1 + 150), "[OK] Verified Official Account • MCA 2025-2027 Committee", fill=(52, 211, 153), font=font_small)

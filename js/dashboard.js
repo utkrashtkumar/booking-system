@@ -349,7 +349,7 @@ function initConsentScrollEnforcement() {
       console.error("Consent recording error:", err);
       alert("Error saving consent. Please try again: " + err.message);
       agreeBtn.disabled = false;
-      agreeBtn.textContent = "I Agree & Proceed to Payment (₹99)";
+      agreeBtn.textContent = "I Agree & Proceed to Payment (₹199)";
     }
   });
 }

@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID UNIQUE NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     utr_number TEXT UNIQUE NOT NULL,
-    amount NUMERIC(10, 2) DEFAULT 99.00 NOT NULL,
+    amount NUMERIC(10, 2) DEFAULT 199.00 NOT NULL,
     payment_mobile TEXT NOT NULL,
     screenshot_url TEXT,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),

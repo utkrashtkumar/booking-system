@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .upsert({
             user_id: currentStudent.id,
             utr_number: utr,
-            amount: 99.00,
+            amount: 199.00,
             payment_mobile: mobile,
             screenshot_url: screenshotUrl,
             status: "pending",

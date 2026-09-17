@@ -23,7 +23,7 @@ const CONFIG = {
     COUNTDOWN_TARGET: "2026-09-27T12:00:00+05:30",
     VENUE: "IET Lucknow Auditorium / Campus Grounds",
     DRESS_CODE: "Smart Casuals / Ethnic Glamour",
-    ENTRY_FEE: 99, // In INR
+    ENTRY_FEE: 199, // In INR
   },
 
   // Payment Details (Authorized PhonePe UPI)
@@ -33,7 +33,7 @@ const CONFIG = {
     RECEIVER_DISPLAY: "Bhanu Pratap Singh (DSW)",
     UPI_NAME: "Bhanu Pratap Singh (DSW)",
     UPI_MOBILE: "8006770753",
-    AMOUNT: 99,
+    AMOUNT: 199,
     QR_IMAGE: "assets/upi-qr.png"
   },
 
