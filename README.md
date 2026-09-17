@@ -2,7 +2,7 @@
 
 Official digital entry pass and event management platform for **MCA Freshers 2026** at the **Institute of Engineering & Technology (IET), Lucknow**.
 
-Organized by the **MCA Batch of 2025–2027** welcoming the incoming **MCA Batch of 2026–2028**.
+
 
 
 
