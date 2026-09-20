@@ -40,7 +40,7 @@ const CONFIG = {
 
   // Helpline Numbers
   HELPLINE: [
-    { number: "7275251067", display: "+91 72752 51067", name: "Akanksha (Coordinator)" },
+    { number: "9105802148", display: "+91 91058 02148", name: "Vibhu (Coordinator)" },
     { number: "6392955739", display: "+91 63929 55739", name: "Utsav (Coordinator)" }
   ],
 

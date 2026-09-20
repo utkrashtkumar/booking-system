@@ -149,6 +149,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (avatarImg) {
+      avatarImg.crossOrigin = "anonymous";
+      avatarImg.onerror = () => {
+        avatarImg.crossOrigin = null;
+        avatarImg.src = "assets/avatars/av1.svg";
+      };
       if (profile && profile.avatar_url) {
         avatarImg.src = profile.avatar_url;
       } else {
@@ -179,6 +184,33 @@ document.addEventListener("DOMContentLoaded", async () => {
             correctLevel: QRCode.CorrectLevel.H
           });
           qrRendered = true;
+
+          // Convert QRCode canvas to clean <img> so html2canvas never encounters a hidden 0x0 canvas
+          const convertQrCanvasToImg = () => {
+            const qrCanvas = qrContainer.querySelector("canvas");
+            const qrImg = qrContainer.querySelector("img");
+            if (qrCanvas && qrCanvas.width > 0 && qrCanvas.height > 0) {
+              try {
+                const dataUrl = qrCanvas.toDataURL("image/png");
+                qrContainer.innerHTML = `<img src="${dataUrl}" alt="QR Entry Pass Code" style="width: 170px; height: 170px; display: block; margin: 0 auto; border-radius: 8px;">`;
+                return;
+              } catch (e) {
+                console.warn("Canvas toDataURL failed:", e);
+              }
+            }
+            if (qrImg && qrImg.src && qrImg.src.startsWith("data:")) {
+              qrImg.style.display = "block";
+              qrImg.style.width = "170px";
+              qrImg.style.height = "170px";
+              qrImg.style.margin = "0 auto";
+              qrImg.style.borderRadius = "8px";
+              if (qrCanvas) qrCanvas.remove();
+            }
+          };
+
+          convertQrCanvasToImg();
+          setTimeout(convertQrCanvasToImg, 60);
+          setTimeout(convertQrCanvasToImg, 250);
         } catch (qrErr) {
           console.warn("QRCode canvas error, using image fallback:", qrErr);
         }
@@ -198,7 +230,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // 8. DOWNLOAD AS PNG (html2canvas)
     if (downloadPngBtn) {
-      downloadPngBtn.addEventListener("click", () => {
+      downloadPngBtn.addEventListener("click", async () => {
         const passElement = document.getElementById("pass-printable-card");
         downloadPngBtn.disabled = true;
         downloadPngBtn.textContent = "Generating Image...";
@@ -210,23 +242,77 @@ document.addEventListener("DOMContentLoaded", async () => {
           return;
         }
 
-        html2canvas(passElement, {
-          scale: 2, // High resolution
-          useCORS: true,
-          backgroundColor: null
-        }).then((canvas) => {
-          const link = document.createElement("a");
-          link.download = `MCA_Freshers_2026_Pass_${pass.pass_code}.png`;
-          link.href = canvas.toDataURL("image/png");
-          link.click();
+        try {
+          // Pre-sanitize: Convert any canvas to <img> or remove if 0x0
+          const canvases = passElement.querySelectorAll("canvas");
+          canvases.forEach(c => {
+            if (c.width > 0 && c.height > 0) {
+              try {
+                const dataUrl = c.toDataURL("image/png");
+                const img = document.createElement("img");
+                img.src = dataUrl;
+                img.style.width = (c.style.width || c.width + "px");
+                img.style.height = (c.style.height || c.height + "px");
+                img.style.display = "block";
+                img.style.margin = "0 auto";
+                img.style.borderRadius = "8px";
+                c.parentElement.replaceChild(img, c);
+              } catch (e) {
+                c.remove();
+              }
+            } else {
+              c.remove();
+            }
+          });
+
+          // Wait for all images in pass to be fully decoded/loaded
+          const passImgs = Array.from(passElement.querySelectorAll("img"));
+          await Promise.all(passImgs.map(img => {
+            if (img.complete && img.naturalWidth !== 0) return Promise.resolve();
+            return new Promise(resolve => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            });
+          }));
+
+          html2canvas(passElement, {
+            scale: 2, // High resolution
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: null,
+            logging: false,
+            ignoreElements: (el) => {
+              if (el.tagName === "CANVAS" && (el.width === 0 || el.height === 0 || el.style.display === "none")) {
+                return true;
+              }
+              return false;
+            },
+            onclone: (clonedDoc) => {
+              const clonedCard = clonedDoc.getElementById("pass-printable-card");
+              if (clonedCard) {
+                // Strip any residual canvases in clone to prevent createPattern errors
+                clonedCard.querySelectorAll("canvas").forEach(c => c.remove());
+              }
+            }
+          }).then((canvas) => {
+            const link = document.createElement("a");
+            link.download = `MCA_Freshers_2026_Pass_${pass.pass_code}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+            downloadPngBtn.disabled = false;
+            downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
+          }).catch(err => {
+            console.error("PNG export error:", err);
+            alert("Failed to export image: " + err.message + "\n\nYou can also use the 'Print / PDF' button to save your pass.");
+            downloadPngBtn.disabled = false;
+            downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
+          });
+        } catch (prepErr) {
+          console.error("PNG export prep error:", prepErr);
+          alert("Export error: " + prepErr.message);
           downloadPngBtn.disabled = false;
           downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
-        }).catch(err => {
-          console.error("PNG export error:", err);
-          alert("Failed to export image: " + err.message);
-          downloadPngBtn.disabled = false;
-          downloadPngBtn.innerHTML = `<span>🖼️ Save as Image</span>`;
-        });
+        }
       });
     }
 
