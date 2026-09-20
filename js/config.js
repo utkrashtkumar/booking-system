@@ -39,8 +39,8 @@ const CONFIG = {
 
   // Helpline Numbers
   HELPLINE: [
-    { number: "8922921012", display: "+91 8922921012", name: "Utkarsh (Coordinator)" },
-    { number: "8006770753", display: "+91 8006770753", name: "Helpline 2 (Organizing Team)" }
+    { number: "7275251067", display: "+91 72752 51067", name: "Akanksha (Coordinator)" },
+    { number: "6392955739", display: "+91 63929 55739", name: "Utsav (Coordinator)" }
   ],
 
   // Terms & Conditions list

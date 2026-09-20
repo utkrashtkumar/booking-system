@@ -237,8 +237,8 @@ function renderPaymentStatus(payment) {
         <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
           ⚠️ <strong>Disciplinary Action Note:</strong> If you believe this is in error, immediately contact Chief Student Coordinators with your official bank account debit statement:
           <div style="margin-top: 0.4rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-            <a href="tel:8922921012" style="color: var(--cyan); font-weight: 700; text-decoration: none;">📞 +91 8922921012</a>
-            <a href="tel:8006770753" style="color: var(--cyan); font-weight: 700; text-decoration: none;">📞 +91 8006770753</a>
+            <a href="tel:7275251067" style="color: var(--cyan); font-weight: 700; text-decoration: none;">📞 +91 72752 51067 (Akanksha)</a>
+            <a href="tel:6392955739" style="color: var(--cyan); font-weight: 700; text-decoration: none;">📞 +91 63929 55739 (Utsav)</a>
           </div>
         </div>
       `;
