@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!payment) {
       if (loadingState) loadingState.style.display = "none";
       if (deniedState) deniedState.style.display = "block";
-      if (deniedReason) deniedReason.textContent = "You have not submitted your ₹199 payment yet. Please complete payment on your dashboard.";
+      if (deniedReason) deniedReason.textContent = "You have not submitted your ₹200 payment yet. Please complete payment on your dashboard.";
       return;
     }
 
