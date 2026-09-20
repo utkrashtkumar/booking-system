@@ -12,7 +12,7 @@ Official digital entry pass and event management platform for **MCA Freshers 202
 
 - **🎓 Landing Page (`index.html`):**
   - Cosmic luxury cyber-theme with smooth dark/light mode toggle.
-  - Event details (Sunday, 27 September 2026 • 12:00 PM – 6:00 PM).
+  - Event details (Sunday, 27 September 2026 • 11:00 AM – 6:00 PM [Tentative] at My Bar Headquarters, Lucknow).
   - Highlighting party vibes, cultural acts, DJ console, catering, safety & female security, and zero-ragging strict decorum.
 - **🔐 Authentication & Onboarding (`auth.html`):**
   - Registration with duplicate mobile & email verification.
