@@ -547,6 +547,17 @@ h1, h2, h3, h4, .font-heading {
   opacity: 0.3;
 }
 
+/* Disable pseudo-elements on printable pass to prevent html2canvas 0-dimension canvas errors */
+#pass-printable-card::before,
+#pass-printable-card::after,
+.pass-card::before,
+.pass-card::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  background-image: none !important;
+}
+
 .card:hover {
   border-color: rgba(225, 29, 72, 0.35);
 }
