@@ -1074,6 +1074,21 @@ h1, h2, h3, h4, .font-heading {
   font-size: 0.8rem;
 }
 
+.footer-author-link {
+  color: var(--cyan);
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.footer-author-link:hover {
+  color: var(--primary-light);
+  text-decoration: underline;
+}
+
 /* --- RESPONSIVE UTILITIES & GRIDS --- */
 .payment-grid {
   display: grid;
