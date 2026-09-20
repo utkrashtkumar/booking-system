@@ -43,6 +43,18 @@ const CONFIG = {
     { number: "6392955739", display: "+91 63929 55739", name: "Utsav (Coordinator)" }
   ],
 
+  // Mandatory Acknowledgement & Consent (Unofficial Student-Organized Event)
+  ACKNOWLEDGEMENT: {
+    TITLE: "Mandatory Acknowledgement & Consent",
+    STATEMENT_1: "I acknowledge that the MCA Freshers’ Event is an unofficial event being organized voluntarily by the senior students of the MCA 2027 batch and is not an official event of IET Lucknow or conducted/authorized by any college authority, department, faculty member, or official college body.",
+    STATEMENT_2: "I am participating in the event voluntarily and with my own free consent. I understand the nature of the event and the arrangements communicated to me by the student organizers. I understand that obtaining a pass is subject to the event’s applicable rules and arrangements.",
+    STATEMENT_3: "I confirm that I have provided the information required for pass generation correctly and that I will follow the instructions and rules communicated by the student organizers during the event. I understand that participation is my personal choice, and I may seek clarification from the student organizers regarding the event or my pass before participating.",
+    SUBMISSION_CONFIRMATION: "By submitting this form, I confirm that I have read, understood, and voluntarily agreed to the above acknowledgement.",
+    CHECKBOX_1: "I have read and understood the acknowledgement and confirm that I am participating in the MCA Freshers’ Event voluntarily and with my own consent.",
+    CHECKBOX_2: "I understand that this is an unofficial student-organized event and that my participation does not represent or imply official endorsement or authorization by IET Lucknow or any college authority.",
+    PASS_SUMMARY: "Unofficial event organized voluntarily by senior students of MCA 2027 batch. Not an official event of IET Lucknow; not authorized or endorsed by any college authority, department, or faculty. Voluntary participation."
+  },
+
   // Terms & Conditions list
   TERMS: [
     "🚫 STRICTLY NO ALCOHOL & SUBSTANCE USE: Bringing, consuming, or being under the influence of alcohol, drugs, or any intoxicants is strictly prohibited. Violators will face immediate expulsion, forfeiture of pass without refund, and disciplinary action by organizing committee.",

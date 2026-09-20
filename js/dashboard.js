@@ -310,7 +310,7 @@ function initConsentScrollEnforcement() {
     if (isAtBottom && !hasScrolledToBottom) {
       hasScrolledToBottom = true;
       consentCheckbox.disabled = false;
-      scrollHint.innerHTML = `✓ <span style="color: var(--success); font-weight: 600;">Terms read! You can now check the box below to agree.</span>`;
+      scrollHint.innerHTML = `✓ <span style="color: var(--success); font-weight: 600;">Acknowledgement read! You can now check the box below to agree.</span>`;
     }
   });
 
