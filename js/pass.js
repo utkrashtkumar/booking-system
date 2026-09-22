@@ -401,7 +401,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       ctx.fillStyle = "#f1f5f9";
       ctx.font = "11.5px system-ui, sans-serif";
-      ctx.fillText("📅 27 September 2026 (11 AM - 6 PM) [Tentative]   •   📍 My Bar Headquarters, Lucknow", 48, pillY + 19);
+      ctx.fillText("📅 27 September 2026 (11 AM - 6 PM) [Tentative]   •   📍 The Twilight Kitchen And Bar, Lucknow", 48, pillY + 19);
 
       // 8. Pass ID & UTR Box
       const boxY = 270;

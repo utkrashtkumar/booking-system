@@ -21,8 +21,8 @@ const CONFIG = {
     DATE: "27 September 2026",
     TIME: "11:00 AM - 6:00 PM",
     COUNTDOWN_TARGET: "2026-09-27T11:00:00+05:30",
-    VENUE: "My Bar Headquarters, Lucknow",
-    VENUE_MAP_URL: "https://maps.app.goo.gl/7hKPj977BnjPaFK98",
+    VENUE: "The Twilight Kitchen And Bar, Lucknow",
+    VENUE_MAP_URL: "https://maps.app.goo.gl/HCPZeSQYXgndgRr56",
     DRESS_CODE: "Smart Casuals / Ethnic Glamour",
     ENTRY_FEE: 200, // In INR
   },
