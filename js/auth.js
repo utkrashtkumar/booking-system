@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tabBtnSignup = document.getElementById("tab-btn-signup");
   const loginForm = document.getElementById("login-form");
   const signupForm = document.getElementById("signup-form");
+  const signupClosedContainer = document.getElementById("signup-closed-container");
+  const closedSwitchLoginBtn = document.getElementById("closed-switch-login-btn");
   const authAlert = document.getElementById("auth-alert");
   const mobileError = document.getElementById("mobile-duplicate-error");
   const emailDuplicateError = document.getElementById("email-duplicate-error");
@@ -54,8 +56,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       tabBtnSignup.style.color = "#ffffff";
       tabBtnLogin.style.background = "transparent";
       tabBtnLogin.style.color = "var(--text-muted)";
-      signupForm.style.display = "block";
-      loginForm.style.display = "none";
+
+      // If registration is closed, show registration closed notice view
+      if (CONFIG.REGISTRATION_OPEN === false) {
+        if (signupClosedContainer) signupClosedContainer.style.display = "block";
+        signupForm.style.display = "none";
+        loginForm.style.display = "none";
+      } else {
+        if (signupClosedContainer) signupClosedContainer.style.display = "none";
+        signupForm.style.display = "block";
+        loginForm.style.display = "none";
+      }
     } else {
       tabBtnLogin.style.background = "var(--primary)";
       tabBtnLogin.style.color = "#ffffff";
@@ -63,19 +74,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       tabBtnSignup.style.color = "var(--text-muted)";
       loginForm.style.display = "block";
       signupForm.style.display = "none";
+      if (signupClosedContainer) signupClosedContainer.style.display = "none";
     }
   }
 
   tabBtnLogin.addEventListener("click", () => switchTab("login"));
   tabBtnSignup.addEventListener("click", () => switchTab("signup"));
-  document.getElementById("switch-to-signup").addEventListener("click", (e) => {
-    e.preventDefault();
-    switchTab("signup");
-  });
-  document.getElementById("switch-to-login").addEventListener("click", (e) => {
-    e.preventDefault();
-    switchTab("login");
-  });
+  const switchToSignup = document.getElementById("switch-to-signup");
+  if (switchToSignup) {
+    switchToSignup.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchTab("signup");
+    });
+  }
+  const switchToLogin = document.getElementById("switch-to-login");
+  if (switchToLogin) {
+    switchToLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchTab("login");
+    });
+  }
+  if (closedSwitchLoginBtn) {
+    closedSwitchLoginBtn.addEventListener("click", () => switchTab("login"));
+  }
 
   // Password visibility is handled directly by window.togglePasswordVisibility(btn, inputId)
 
@@ -233,6 +254,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     clearAlert();
+
+    // Guard: Prevent signup if registrations are closed
+    if (CONFIG.REGISTRATION_OPEN === false) {
+      showAlert("🚫 Registrations are officially closed now. Only registered users are able to login.", "error");
+      switchTab("login");
+      return;
+    }
+
     if (emailDuplicateError) emailDuplicateError.style.display = "none";
     if (mobileError) mobileError.style.display = "none";
     if (passwordMatchError) passwordMatchError.style.display = "none";

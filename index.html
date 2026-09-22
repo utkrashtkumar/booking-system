@@ -13,7 +13,7 @@
   <meta property="og:description" content="Official entry pass portal for MCA Freshers 2026 at IET Lucknow. Register now for ₹200 and download your official entry pass.">
   <meta property="og:image" content="https://utkrasht.in/Ietlogo.png">
   <link rel="icon" type="image/png" href="Ietlogo.png">
-  <link rel="stylesheet" href="css/style.css?v=2026.6">
+  <link rel="stylesheet" href="css/style.css?v=2026.9">
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -39,11 +39,26 @@
 
         <div class="nav-actions">
           <button class="theme-toggle-btn" aria-label="Toggle Theme"></button>
-          <a href="auth.html?mode=login" class="btn btn-ghost btn-sm">Login</a>
-          <a href="auth.html?mode=signup" class="btn btn-primary btn-sm">Register ₹200</a>
+          <span class="badge badge-danger" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; font-weight: 800;">REGISTRATION CLOSED</span>
+          <a href="auth.html?mode=login" class="btn btn-primary btn-sm">Student Login</a>
         </div>
       </div>
     </header>
+
+    <!-- Registration Closed Notice Banner -->
+    <div class="registration-closed-banner">
+      <div class="container" style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap; text-align: center;">
+        <span class="badge badge-danger" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; letter-spacing: 0.05em; font-weight: 800;">
+          🔒 NOTICE: REGISTRATION CLOSED
+        </span>
+        <span style="font-size: 0.88rem; color: #ffffff; font-weight: 600;">
+          Registrations for MCA Freshers 2026 are officially closed now. Only registered students are able to log in to access passes.
+        </span>
+        <a href="auth.html?mode=login" class="btn btn-secondary btn-sm" style="padding: 0.3rem 0.85rem; font-size: 0.8rem; font-weight: 700; border-color: rgba(225, 29, 72, 0.5);">
+          Student Login →
+        </a>
+      </div>
+    </div>
 
     <!-- Main Content -->
     <main style="flex: 1;">
@@ -51,8 +66,9 @@
       <section style="padding: 4.5rem 0 3rem; text-align: center; position: relative;">
         <div class="container" style="max-width: 860px;">
           <!-- Badge -->
-          <div style="margin-bottom: 1.25rem;">
+          <div style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
             <span class="badge badge-primary">DEPARTMENT OF MCA • IET LUCKNOW</span>
+            <span class="badge badge-danger" style="font-weight: 800;">🔒 REGISTRATIONS CLOSED</span>
           </div>
 
           <!-- Main Heading -->
@@ -63,7 +79,7 @@
 
           <!-- Subtitle / Batch Notice -->
           <p style="font-size: clamp(1rem, 2.5vw, 1.18rem); color: var(--text-muted); max-width: 680px; margin: 0 auto 2.25rem; line-height: 1.65;">
-            The MCA Batch of 2025–2027 seniors welcome the incoming MCA Batch of 2026–2028. Register below to claim your digital entry pass and join us for an unforgettable celebration.
+            The MCA Batch of 2025–2027 seniors welcome the incoming MCA Batch of 2026–2028. Registrations are officially closed now. Registered students can log in below to access and download their entry passes.
           </p>
 
           <!-- Precision Liquid Glass Countdown Chronograph -->
@@ -94,19 +110,18 @@
 
           <!-- Hero Action Buttons -->
           <div class="hero-cta-group">
-            <a href="auth.html?mode=signup" class="btn btn-primary btn-lg btn-party-shimmer">
-              <span>🎟️ Claim Entry Pass</span>
-              <span class="badge" style="background: rgba(255, 255, 255, 0.2); color: #ffffff; padding: 0.2rem 0.5rem; font-size: 0.75rem;">₹200 ONLY</span>
+            <a href="auth.html?mode=login" class="btn btn-primary btn-lg btn-party-shimmer">
+              <span>🔑 Student Login (Access Pass) →</span>
             </a>
-            <a href="auth.html?mode=login" class="btn btn-secondary btn-lg">
-              <span>Student Login →</span>
+            <a href="dashboard.html" class="btn btn-secondary btn-lg">
+              <span>Pass Dashboard</span>
             </a>
           </div>
 
           <!-- Fee & Verification Notice -->
           <div style="margin-top: 1.5rem;">
-            <span class="exclusivity-notice">
-              🔒 Only MCA IET college students allowed • Outsiders are strictly prohibited
+            <span class="exclusivity-notice" style="border-color: rgba(225, 29, 72, 0.4); background: rgba(225, 29, 72, 0.08); color: var(--primary-light);">
+              🔒 Notice: Registrations are officially closed • Only registered MCA students are able to log in
             </span>
           </div>
         </div>
@@ -230,8 +245,10 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.5rem;">
             <div class="card" style="text-align: center;">
               <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #e11d48, #be123c); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; margin: 0 auto 1rem; box-shadow: 0 4px 14px var(--primary-glow); border-top: 1px solid rgba(255,255,255,0.3);">1</div>
-              <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem;">Sign Up</h3>
-              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">Create account with name, email, 10-digit mobile, and gender. Confirm your email link.</p>
+              <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem;">
+                Registration <span class="badge badge-danger" style="font-size: 0.65rem; padding: 0.15rem 0.45rem; vertical-align: middle;">CLOSED</span>
+              </h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">New registrations are closed. Already registered attendees can log in to proceed.</p>
             </div>
 
             <div class="card" style="text-align: center;">
@@ -318,8 +335,7 @@
             <h4>Quick Links</h4>
             <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
               <li><a href="index.html" style="color: var(--text-muted); text-decoration: none;">Home</a></li>
-              <li><a href="auth.html?mode=signup" style="color: var(--text-muted); text-decoration: none;">Register (₹200)</a></li>
-              <li><a href="auth.html?mode=login" style="color: var(--text-muted); text-decoration: none;">Student Login</a></li>
+              <li><a href="auth.html?mode=login" style="color: var(--primary-light); text-decoration: none; font-weight: 600;">Student Login (View Pass)</a></li>
               <li><a href="dashboard.html" style="color: var(--text-muted); text-decoration: none;">Pass Dashboard</a></li>
               <li><a href="admin.html" style="color: var(--cyan); text-decoration: none; font-weight: 600;">Admin Portal 🔐</a></li>
             </ul>
@@ -350,8 +366,8 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/theme.js"></script>
+  <script src="js/config.js?v=2026.9"></script>
+  <script src="js/theme.js?v=2026.9"></script>
   <script>
     // Live Countdown Timer
     (function initCountdown() {

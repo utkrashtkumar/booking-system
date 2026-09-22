@@ -327,6 +327,22 @@ h1, h2, h3, h4, .font-heading {
   padding: 0.85rem 0;
 }
 
+/* Registration Closed Announcement Banner */
+.registration-closed-banner {
+  background: linear-gradient(90deg, rgba(225, 29, 72, 0.22) 0%, rgba(190, 18, 60, 0.35) 50%, rgba(225, 29, 72, 0.22) 100%);
+  border-bottom: 1px solid rgba(225, 29, 72, 0.5);
+  box-shadow: 0 4px 20px rgba(225, 29, 72, 0.15);
+  padding: 0.65rem 1rem;
+  position: relative;
+  z-index: 45;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+[data-theme="light"] .registration-closed-banner {
+  background: linear-gradient(90deg, rgba(225, 29, 72, 0.1) 0%, rgba(190, 18, 60, 0.16) 50%, rgba(225, 29, 72, 0.1) 100%);
+  border-bottom: 1px solid rgba(225, 29, 72, 0.3);
+}
+
 .navbar .nav-content {
   display: flex;
   align-items: center;

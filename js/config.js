@@ -27,6 +27,10 @@ const CONFIG = {
     ENTRY_FEE: 200, // In INR
   },
 
+  // Registration Status
+  REGISTRATION_OPEN: false,
+  REGISTRATION_CLOSED_NOTICE: "Registrations for MCA Freshers 2026 are officially closed now. Only registered students are able to log in to view and download their entry passes.",
+
   // Payment Details (Authorized Paytm / UPI)
   PAYMENT: {
     UPI_ID: "9105802148@ptsbi",
