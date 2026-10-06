@@ -1,6 +1,6 @@
 /**
  * IET LUCKNOW - MCA FRESHERS 2026 PLATFORM
- * Admin Dashboard & Gate QR Scanner Controller
+ * Admin Dashboard & Gate QR Scanner Controller (Local SQLite / Express API)
  */
 
 let allUsersData = [];
@@ -9,35 +9,39 @@ let html5QrCodeScanner = null;
 let isScanning = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const supabase = getSupabase();
-
-  if (!supabase) {
-    alert("Supabase SDK not loaded.");
-    return;
-  }
-
-  // 1. STRICT ADMIN AUTH CHECK
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
   const guardBanner = document.getElementById("admin-guard-banner");
   const adminContent = document.getElementById("admin-content-section");
 
-  if (sessionError || !session || !session.user || session.user.email.toLowerCase() !== CONFIG.ADMIN_EMAIL.toLowerCase()) {
-    guardBanner.style.display = "block";
-    adminContent.style.display = "none";
+  // 1. STRICT ADMIN AUTH CHECK
+  try {
+    const { session, user } = await API.getSession();
+
+    if (!session || !user || (user.email.toLowerCase() !== CONFIG.ADMIN_EMAIL.toLowerCase() && user.role !== 'admin')) {
+      if (guardBanner) guardBanner.style.display = "block";
+      if (adminContent) adminContent.style.display = "none";
+      return;
+    }
+
+    // Admin access verified
+    if (guardBanner) guardBanner.style.display = "none";
+    if (adminContent) adminContent.style.display = "block";
+    const tag = document.getElementById("admin-user-tag");
+    if (tag) tag.textContent = user.email;
+
+  } catch (err) {
+    if (guardBanner) guardBanner.style.display = "block";
+    if (adminContent) adminContent.style.display = "none";
     return;
   }
 
-  // Admin access verified
-  guardBanner.style.display = "none";
-  adminContent.style.display = "block";
-  document.getElementById("admin-user-tag").textContent = session.user.email;
-
   // Logout
-  document.getElementById("admin-logout-btn").addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    window.location.href = "index.html";
-  });
+  const logoutBtn = document.getElementById("admin-logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await API.logout();
+      window.location.href = "index.html";
+    });
+  }
 
   // 2. SETUP TAB SWITCHING
   setupTabs();
@@ -75,11 +79,11 @@ function setupTabs() {
   const allTabs = [tabUsers, tabPayments, tabScanner, tabCheckin];
 
   function activateTab(activeBtn, activeContent) {
-    allBtns.forEach(b => b.classList.remove("active"));
-    allTabs.forEach(c => c.style.display = "none");
+    allBtns.forEach(b => { if (b) b.classList.remove("active"); });
+    allTabs.forEach(c => { if (c) c.style.display = "none"; });
 
-    activeBtn.classList.add("active");
-    activeContent.style.display = "block";
+    if (activeBtn) activeBtn.classList.add("active");
+    if (activeContent) activeContent.style.display = "block";
 
     // Stop camera if leaving scanner tab
     if (activeBtn !== btnScanner && isScanning && html5QrCodeScanner) {
@@ -92,42 +96,29 @@ function setupTabs() {
     }
   }
 
-  btnUsers.addEventListener("click", () => activateTab(btnUsers, tabUsers));
-  btnPayments.addEventListener("click", () => activateTab(btnPayments, tabPayments));
-  btnScanner.addEventListener("click", () => activateTab(btnScanner, tabScanner));
-  btnCheckin.addEventListener("click", () => activateTab(btnCheckin, tabCheckin));
+  if (btnUsers) btnUsers.addEventListener("click", () => activateTab(btnUsers, tabUsers));
+  if (btnPayments) btnPayments.addEventListener("click", () => activateTab(btnPayments, tabPayments));
+  if (btnScanner) btnScanner.addEventListener("click", () => activateTab(btnScanner, tabScanner));
+  if (btnCheckin) btnCheckin.addEventListener("click", () => activateTab(btnCheckin, tabCheckin));
 
-  document.getElementById("refresh-payments-btn").addEventListener("click", loadAdminData);
+  const refreshBtn = document.getElementById("refresh-payments-btn");
+  if (refreshBtn) refreshBtn.addEventListener("click", loadAdminData);
 }
 
 // Load all registered users, payments, and passes
 async function loadAdminData() {
-  const supabase = getSupabase();
-
   try {
-    // 1. Fetch Profiles
-    const { data: profiles, error: pErr } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const data = await API.getAdminData();
+    const profiles = data.profiles || [];
+    const payments = data.payments || [];
+    const passes = data.passes || [];
 
-    // 2. Fetch Payments
-    const { data: payments, error: payErr } = await supabase
-      .from("payments")
-      .select("*")
-      .order("submitted_at", { ascending: false });
-
-    // 3. Fetch Passes
-    const { data: passes, error: passErr } = await supabase
-      .from("passes")
-      .select("*");
-
-    allPaymentsData = payments || [];
-    const passesMap = new Map((passes || []).map(p => [p.user_id, p]));
-    const paymentsMap = new Map((payments || []).map(p => [p.user_id, p]));
+    allPaymentsData = payments;
+    const passesMap = new Map(passes.map(p => [p.user_id, p]));
+    const paymentsMap = new Map(payments.map(p => [p.user_id, p]));
 
     // Combine user records
-    allUsersData = (profiles || []).map(u => ({
+    allUsersData = profiles.map(u => ({
       ...u,
       payment: paymentsMap.get(u.id) || null,
       pass: passesMap.get(u.id) || null
@@ -138,10 +129,10 @@ async function loadAdminData() {
 
     // Render Tables
     renderUsersTable(allUsersData);
-    renderPaymentsTable(allPaymentsData, profiles || []);
+    renderPaymentsTable(allPaymentsData, profiles);
 
-    // Also update check-in badge count from passes
-    const scannedCount = (passes || []).filter(p => p.is_used).length;
+    // Update check-in badge count from passes
+    const scannedCount = passes.filter(p => p.is_used).length;
     const badge = document.getElementById("checkin-count-badge");
     if (badge) badge.textContent = scannedCount;
 
@@ -151,10 +142,9 @@ async function loadAdminData() {
 }
 
 // ============================================
-// CHECK-IN LOG: Load Scanned Passes from DB
+// CHECK-IN LOG: Load Scanned Passes
 // ============================================
 async function loadCheckInLog() {
-  const supabase = getSupabase();
   const tbody = document.getElementById("checkin-table-body");
   const totalEl = document.getElementById("checkin-total-count");
   const badge = document.getElementById("checkin-count-badge");
@@ -163,19 +153,14 @@ async function loadCheckInLog() {
   tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-dim);">Loading check-in records...</td></tr>`;
 
   try {
-    const { data: scannedPasses, error } = await supabase
-      .from("passes")
-      .select("*, profiles(*), payments(utr_number)")
-      .eq("is_used", true)
-      .order("scanned_at", { ascending: false });
+    const res = await API.getCheckInLog();
+    const scannedPasses = res.entries || [];
 
-    if (error) throw error;
-
-    const count = (scannedPasses || []).length;
+    const count = scannedPasses.length;
     if (badge) badge.textContent = count;
     if (totalEl) totalEl.innerHTML = `Total Entered: <strong style="color: var(--success);">${count}</strong>`;
 
-    renderCheckInTable(scannedPasses || []);
+    renderCheckInTable(scannedPasses);
 
     // Hook refresh button
     const refreshBtn = document.getElementById("refresh-checkin-btn");
@@ -248,185 +233,168 @@ function updateKpis() {
   const consentDone = allUsersData.filter(u => u.consent_agreed).length;
   const paymentsSubmitted = allPaymentsData.length;
   const pendingReviews = allPaymentsData.filter(p => p.status === "pending").length;
-  const passesIssued = allUsersData.filter(u => u.pass || (u.payment && u.payment.status === "approved")).length;
+  const approvedPayments = allPaymentsData.filter(p => p.status === "approved").length;
 
-  document.getElementById("kpi-total-users").textContent = totalUsers;
-  document.getElementById("kpi-consent-done").textContent = consentDone;
-  document.getElementById("kpi-payments-submitted").textContent = paymentsSubmitted;
-  document.getElementById("kpi-pending-reviews").textContent = pendingReviews;
-  document.getElementById("kpi-passes-issued").textContent = passesIssued;
+  const kpiTotal = document.getElementById("kpi-total-users");
+  const kpiConsent = document.getElementById("kpi-consent-agreed");
+  const kpiSubmitted = document.getElementById("kpi-payments-submitted");
+  const kpiPending = document.getElementById("kpi-pending-reviews");
+  const kpiApproved = document.getElementById("kpi-approved-passes");
 
-  document.getElementById("pending-count-badge").textContent = pendingReviews;
+  if (kpiTotal) kpiTotal.textContent = totalUsers;
+  if (kpiConsent) kpiConsent.textContent = consentDone;
+  if (kpiSubmitted) kpiSubmitted.textContent = paymentsSubmitted;
+  if (kpiPending) kpiPending.textContent = pendingReviews;
+  if (kpiApproved) kpiApproved.textContent = approvedPayments;
 }
 
-// Render Users Table in Tab 1
+// Render Users Table
 function renderUsersTable(users) {
   const tbody = document.getElementById("users-table-body");
   if (!tbody) return;
 
   if (users.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-dim);">No matching attendees found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-dim);">No students found.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = users.map((u, i) => {
-    let paymentStatusBadge = `<span class="badge badge-warning" style="background: var(--bg-glass); color: var(--text-dim); border: 1px solid var(--border-glass);">Not Paid</span>`;
-    let utrText = "--";
-    let passCodeText = "--";
+    const regDate = u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN') : "--";
+    const avatarSrc = u.avatar_url || "assets/avatars/av1.svg";
 
+    let payStatusBadge = `<span class="badge" style="background: rgba(255,255,255,0.06); color: var(--text-dim);">No Payment</span>`;
     if (u.payment) {
-      utrText = `<span class="font-mono">${u.payment.utr_number}</span>`;
       if (u.payment.status === "approved") {
-        paymentStatusBadge = `<span class="badge badge-success">Approved ✓</span>`;
+        payStatusBadge = `<span class="badge badge-success">Approved ✓</span>`;
       } else if (u.payment.status === "rejected") {
-        paymentStatusBadge = `<span class="badge badge-danger">Rejected</span>`;
+        payStatusBadge = `<span class="badge badge-danger">Rejected</span>`;
       } else {
-        paymentStatusBadge = `<span class="badge badge-warning">Pending Review</span>`;
+        payStatusBadge = `<span class="badge badge-warning">Pending Review</span>`;
       }
     }
 
-    if (u.pass) {
-      passCodeText = `<span class="font-mono" style="color: var(--cyan); font-weight: 700;">${u.pass.pass_code}</span>`;
-    }
-
-    const consentPill = u.consent_agreed 
+    const consentBadge = u.consent_agreed
       ? `<span style="color: var(--success); font-weight: 700;">✓ Agreed</span>`
       : `<span style="color: var(--text-dim);">Pending</span>`;
 
-    const avatarSrc = u.avatar_url || "assets/avatars/av1.svg";
+    const passInfo = u.pass
+      ? `<span class="font-mono" style="color: var(--cyan); font-weight: 700;">${u.pass.pass_code}</span>`
+      : `<span style="color: var(--text-dim);">--</span>`;
 
     return `
       <tr>
-        <td style="font-weight: 700; color: var(--text-dim);">${i + 1}</td>
+        <td style="color: var(--text-dim); font-size: 0.8rem;">${i + 1}</td>
         <td>
           <div style="display: flex; align-items: center; gap: 0.65rem;">
             <img src="${avatarSrc}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-glass);">
             <div>
-              <div style="font-weight: 600; color: var(--text-main);">${u.full_name || "Unnamed"}</div>
-              <div style="font-size: 0.72rem; color: var(--text-dim);">${new Date(u.created_at).toLocaleDateString('en-IN')}</div>
+              <div style="font-weight: 700; color: var(--text-main);">${u.full_name || "Unknown"}</div>
+              <div style="font-size: 0.72rem; color: var(--text-dim);">${regDate}</div>
             </div>
           </div>
         </td>
-        <td>${u.email}</td>
-        <td>${u.mobile ? `+91 ${u.mobile}` : "--"}</td>
-        <td style="text-transform: capitalize;">${u.gender || "--"}</td>
-        <td>${consentPill}</td>
-        <td>${paymentStatusBadge}</td>
-        <td>${utrText}</td>
-        <td>${passCodeText}</td>
+        <td style="font-size: 0.85rem;">${u.email}</td>
+        <td>${u.mobile ? "+91 " + u.mobile : "--"}</td>
+        <td>${consentBadge}</td>
+        <td>${payStatusBadge}</td>
+        <td>${passInfo}</td>
       </tr>
     `;
   }).join("");
 }
 
-// Render Payments Table in Tab 2 - split into Pending and Approved sections
+// Render Payments Table
 function renderPaymentsTable(payments, profiles) {
-  const pendingBody = document.getElementById("payments-pending-body");
-  const approvedBody = document.getElementById("payments-approved-body");
-  const pendingCountEl = document.getElementById("pending-section-count");
-  const approvedCountEl = document.getElementById("approved-section-count");
+  const pendingTbody = document.getElementById("pending-payments-table-body");
+  const approvedTbody = document.getElementById("approved-payments-table-body");
 
-  if (!pendingBody || !approvedBody) return;
+  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+  const passMap = new Map((allUsersData || []).filter(u => u.pass).map(u => [u.id, u.pass]));
 
-  const profileMap = new Map(profiles.map(p => [p.id, p]));
+  const pendingPayments = payments.filter(p => p.status === "pending" || p.status === "rejected");
+  const approvedPayments = payments.filter(p => p.status === "approved");
 
-  const pending = payments.filter(p => p.status === "pending" || p.status === "rejected");
-  const approved = payments.filter(p => p.status === "approved");
+  // Pending Payments Table
+  if (pendingTbody) {
+    if (pendingPayments.length === 0) {
+      pendingTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-dim);">🎉 No pending payments to review!</td></tr>`;
+    } else {
+      pendingTbody.innerHTML = pendingPayments.map(p => {
+        const student = profileMap.get(p.user_id) || {};
+        const studentName = student.full_name || "Student";
+        const studentEmail = student.email || "";
+        const studentMobile = p.payment_mobile || student.mobile || "";
+        const subTime = p.submitted_at ? new Date(p.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : "--";
 
-  if (pendingCountEl) pendingCountEl.textContent = `${pending.length} pending`;
-  if (approvedCountEl) approvedCountEl.textContent = `${approved.length} approved`;
+        const screenshotBtn = p.screenshot_url
+          ? `<button class="btn btn-secondary btn-sm" onclick="openScreenshotModal('${p.screenshot_url}')">View Proof 🖼️</button>`
+          : `<span style="color: var(--text-dim); font-size: 0.8rem;">No file</span>`;
 
-  // --- RENDER PENDING TABLE ---
-  if (pending.length === 0) {
-    pendingBody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-dim);">
-          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎉</div>
-          <div>No pending submissions! All payments have been reviewed.</div>
-        </td>
-      </tr>`;
-  } else {
-    pendingBody.innerHTML = pending.map((p) => {
-      const student = profileMap.get(p.user_id) || {};
-      const studentName = student.full_name || "Student";
-      const timeFormatted = new Date(p.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+        let statusBadge = `<span class="badge badge-warning">Pending Review</span>`;
+        if (p.status === "rejected") {
+          statusBadge = `<span class="badge badge-danger">Rejected</span>`;
+        }
 
-      let statusBadge = `<span class="badge badge-warning">Pending Review</span>`;
-      if (p.status === "rejected") statusBadge = `<span class="badge badge-danger">Rejected ✕</span>`;
-
-      const screenshotBtn = p.screenshot_url
-        ? `<button class="btn btn-secondary btn-sm" onclick="openScreenshotModal('${p.screenshot_url}')">View Proof 🖼️</button>`
-        : `<span style="color: var(--text-dim); font-size: 0.8rem;">No file</span>`;
-
-      return `
-        <tr>
-          <td style="font-size: 0.8rem; color: var(--text-dim);">${timeFormatted}</td>
-          <td>
-            <div style="font-weight: 600;">${studentName}</div>
-            <div style="font-size: 0.75rem; color: var(--text-dim);">${student.email || ""}</div>
-          </td>
-          <td>+91 ${p.payment_mobile || student.mobile || "--"}</td>
-          <td class="font-mono" style="color: var(--gold); font-weight: 700;">${p.utr_number}</td>
-          <td style="font-weight: 700;">₹${p.amount || 200}</td>
-          <td>${screenshotBtn}</td>
-          <td>
-            <div style="display: flex; flex-direction: column; gap: 0.35rem;">
-              ${statusBadge}
-              <div style="display: flex; gap: 0.4rem; margin-top: 0.25rem;">
-                <button class="btn btn-primary btn-sm" onclick="approvePayment('${p.id}', '${p.user_id}', '${p.utr_number}', '${studentName.replace(/'/g, "\\'")}', '${student.email || ''}', '${p.payment_mobile}')">Approve ✓</button>
-                <button class="btn btn-danger btn-sm" onclick="openRejectModal('${p.id}', '${studentName.replace(/'/g, "\\'")}', '${(student.email || '').replace(/'/g, "\\'")}', '${(p.utr_number || '').replace(/'/g, "\\'")}')">Reject ✕</button>
+        return `
+          <tr>
+            <td style="font-size: 0.8rem; color: var(--text-dim);">${subTime}</td>
+            <td>
+              <div style="font-weight: 600;">${studentName}</div>
+              <div style="font-size: 0.75rem; color: var(--text-dim);">${studentEmail}</div>
+            </td>
+            <td>+91 ${studentMobile || "--"}</td>
+            <td class="font-mono" style="color: var(--gold); font-weight: 700;">${p.utr_number}</td>
+            <td>${screenshotBtn}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <div style="display: flex; gap: 0.4rem;">
+                <button class="btn btn-primary btn-sm" onclick="approvePayment('${p.id}', '${p.user_id}', '${p.utr_number}', '${studentName.replace(/'/g, "\\'")}', '${studentEmail}', '${studentMobile}')">Approve ✓</button>
+                <button class="btn btn-danger btn-sm" onclick="openRejectModal('${p.id}', '${studentName.replace(/'/g, "\\'")}', '${studentEmail}', '${p.utr_number}')">Reject ✕</button>
               </div>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join("");
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
   }
 
-  // --- RENDER APPROVED TABLE ---
-  if (approved.length === 0) {
-    approvedBody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-dim);">
-          <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📋</div>
-          <div>No approved payments yet.</div>
-        </td>
-      </tr>`;
-  } else {
-    // Build pass code map for approved payments
-    const passMap = new Map(allUsersData.filter(u => u.pass).map(u => [u.id, u.pass]));
+  // Approved Payments Table
+  if (approvedTbody) {
+    if (approvedPayments.length === 0) {
+      approvedTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-dim);">No approved payments yet.</td></tr>`;
+    } else {
+      approvedTbody.innerHTML = approvedPayments.map(p => {
+        const student = profileMap.get(p.user_id) || {};
+        const studentName = student.full_name || "Student";
+        const approvedTime = p.approved_at
+          ? new Date(p.approved_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })
+          : new Date(p.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
 
-    approvedBody.innerHTML = approved.map((p) => {
-      const student = profileMap.get(p.user_id) || {};
-      const studentName = student.full_name || "Student";
-      const approvedTime = p.approved_at
-        ? new Date(p.approved_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })
-        : new Date(p.submitted_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+        const screenshotBtn = p.screenshot_url
+          ? `<button class="btn btn-secondary btn-sm" onclick="openScreenshotModal('${p.screenshot_url}')">View Proof 🖼️</button>`
+          : `<span style="color: var(--text-dim); font-size: 0.8rem;">No file</span>`;
 
-      const screenshotBtn = p.screenshot_url
-        ? `<button class="btn btn-secondary btn-sm" onclick="openScreenshotModal('${p.screenshot_url}')">View Proof 🖼️</button>`
-        : `<span style="color: var(--text-dim); font-size: 0.8rem;">No file</span>`;
+        const pass = passMap.get(p.user_id);
+        const passCodeText = pass
+          ? `<span class="font-mono" style="color: var(--cyan); font-weight: 700;">${pass.pass_code}</span>`
+          : `<span style="color: var(--text-dim);">--</span>`;
 
-      const pass = passMap.get(p.user_id);
-      const passCodeText = pass
-        ? `<span class="font-mono" style="color: var(--cyan); font-weight: 700;">${pass.pass_code}</span>`
-        : `<span style="color: var(--text-dim);">--</span>`;
-
-      return `
-        <tr>
-          <td style="font-size: 0.8rem; color: var(--success); font-weight: 600;">✅ ${approvedTime}</td>
-          <td>
-            <div style="font-weight: 600;">${studentName}</div>
-            <div style="font-size: 0.75rem; color: var(--text-dim);">${student.email || ""}</div>
-          </td>
-          <td>+91 ${p.payment_mobile || student.mobile || "--"}</td>
-          <td class="font-mono" style="color: var(--gold); font-weight: 700;">${p.utr_number}</td>
-          <td style="font-weight: 700; color: var(--success);">₹${p.amount || 200}</td>
-          <td>${screenshotBtn}</td>
-          <td>${passCodeText}</td>
-        </tr>
-      `;
-    }).join("");
+        return `
+          <tr>
+            <td style="font-size: 0.8rem; color: var(--success); font-weight: 600;">✅ ${approvedTime}</td>
+            <td>
+              <div style="font-weight: 600;">${studentName}</div>
+              <div style="font-size: 0.75rem; color: var(--text-dim);">${student.email || ""}</div>
+            </td>
+            <td>+91 ${p.payment_mobile || student.mobile || "--"}</td>
+            <td class="font-mono" style="color: var(--gold); font-weight: 700;">${p.utr_number}</td>
+            <td style="font-weight: 700; color: var(--success);">₹${p.amount || 200}</td>
+            <td>${screenshotBtn}</td>
+            <td>${passCodeText}</td>
+          </tr>
+        `;
+      }).join("");
+    }
   }
 }
 
@@ -436,59 +404,17 @@ window.approvePayment = async function (paymentId, userId, utrNumber, studentNam
     return;
   }
 
-  const supabase = getSupabase();
-
   try {
-    // 1. Update Payment Status to Approved
-    const { error: payUpdateErr } = await supabase
-      .from("payments")
-      .update({
-        status: "approved",
-        approved_at: new Date().toISOString(),
-        reviewed_by: CONFIG.ADMIN_EMAIL
-      })
-      .eq("id", paymentId);
-
-    if (payUpdateErr) throw payUpdateErr;
-
-    // 2. Generate and Insert Pass Record
-    const passCode = `IET-MCA-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const qrPayload = JSON.stringify({
-      event: "MCA_FRESHERS_2026",
-      pass_code: passCode,
-      name: studentName,
-      email: studentEmail,
-      mobile: studentMobile,
-      utr: utrNumber
-    });
-
-    const { error: passInsertErr } = await supabase
-      .from("passes")
-      .upsert({
-        user_id: userId,
-        payment_id: paymentId,
-        pass_code: passCode,
-        qr_payload: qrPayload,
-        issued_at: new Date().toISOString(),
-        is_used: false
-      });
-
-    if (passInsertErr) {
-      console.warn("Pass upsert note:", passInsertErr);
-    }
-
-    alert(`✅ Payment Approved! Pass ${passCode} has been issued to ${studentName}.`);
+    const res = await API.approvePayment(paymentId);
+    alert(`✅ Payment Approved! Pass ${res.pass ? res.pass.pass_code : ''} has been issued to ${studentName}.`);
     await loadAdminData();
-
   } catch (err) {
     console.error("Approval error:", err);
     alert("Error approving payment: " + err.message);
   }
 };
 
-// ==========================================
-// REJECTION & DISCIPLINARY NOTICE MODAL
-// ==========================================
+// Rejection & Disciplinary Notice Modal
 let currentRejectData = null;
 
 const REJECT_PRESETS = {
@@ -516,7 +442,6 @@ function setupRejectModal() {
   if (modalClose) modalClose.addEventListener("click", closeModal);
   if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
 
-  // Preset switching
   radioInputs.forEach(radio => {
     radio.addEventListener("change", (e) => {
       const presetKey = e.target.value;
@@ -531,7 +456,6 @@ function setupRejectModal() {
     });
   });
 
-  // Confirm rejection & transmit notice
   if (confirmBtn) {
     confirmBtn.addEventListener("click", async () => {
       if (!currentRejectData) return;
@@ -555,19 +479,8 @@ function setupRejectModal() {
       confirmBtn.disabled = true;
       confirmBtn.innerHTML = `<span>Transmitting Notice...</span>`;
 
-      const supabase = getSupabase();
       try {
-        const { error } = await supabase
-          .from("payments")
-          .update({
-            status: "rejected",
-            admin_note: notice,
-            reviewed_by: CONFIG.ADMIN_EMAIL
-          })
-          .eq("id", currentRejectData.paymentId);
-
-        if (error) throw error;
-
+        await API.rejectPayment(currentRejectData.paymentId, notice);
         closeModal();
         alert(`✅ Official Notice transmitted and pass approval rejected for ${currentRejectData.studentName}.`);
         await loadAdminData();
@@ -582,68 +495,50 @@ function setupRejectModal() {
   }
 }
 
-// Open modal helper
 window.openRejectModal = function (paymentId, studentName, studentEmail, utrNumber) {
   currentRejectData = { paymentId, studentName, studentEmail, utrNumber };
 
   const modal = document.getElementById("reject-modal");
   const nameEl = document.getElementById("reject-modal-student-name");
-  const emailEl = document.getElementById("reject-modal-student-email");
   const utrEl = document.getElementById("reject-modal-utr");
   const noticeTextarea = document.getElementById("reject-notice-text");
-  const defaultRadio = document.querySelector('input[name="reject-preset"][value="fake"]');
+  const radioFake = document.querySelector('input[name="reject-preset"][value="fake"]');
 
-  if (nameEl) nameEl.textContent = studentName || "Student";
-  if (emailEl) emailEl.textContent = studentEmail || "--";
-  if (utrEl) utrEl.textContent = utrNumber || "--";
+  if (nameEl) nameEl.textContent = studentName + ` (${studentEmail})`;
+  if (utrEl) utrEl.textContent = utrNumber;
 
-  if (defaultRadio) defaultRadio.checked = true;
+  if (radioFake) radioFake.checked = true;
   if (noticeTextarea) noticeTextarea.value = REJECT_PRESETS.fake;
 
   if (modal) modal.classList.add("active");
 };
 
-// Legacy alias
-window.rejectPayment = function (paymentId) {
-  const p = allPaymentsData.find(item => item.id === paymentId);
-  const student = p ? allUsersData.find(u => u.id === p.user_id) : null;
-  const name = student ? student.full_name : "Student";
-  const email = student ? student.email : "";
-  const utr = p ? p.utr_number : "";
-  openRejectModal(paymentId, name, email, utr);
-};
-
-// Setup Search & CSV Export
+// Search & Export
 function setupSearchAndExport() {
-  const searchInput = document.getElementById("user-search-input");
-  const filterSelect = document.getElementById("user-filter-select");
+  const searchInput = document.getElementById("search-users-input");
+  const filterSelect = document.getElementById("filter-status-select");
   const exportBtn = document.getElementById("export-csv-btn");
 
   function filterUsers() {
-    const q = searchInput.value.trim().toLowerCase();
-    const filter = filterSelect.value;
+    const q = (searchInput ? searchInput.value : "").trim().toLowerCase();
+    const filter = filterSelect ? filterSelect.value : "all";
 
     const filtered = allUsersData.filter(u => {
-      // Search match
-      const nameMatch = (u.full_name || "").toLowerCase().includes(q);
-      const emailMatch = (u.email || "").toLowerCase().includes(q);
-      const mobileMatch = (u.mobile || "").includes(q);
-      const utrMatch = u.payment && (u.payment.utr_number || "").toLowerCase().includes(q);
-      const matchesSearch = nameMatch || emailMatch || mobileMatch || utrMatch;
+      const matchQuery = !q ||
+        (u.full_name && u.full_name.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.mobile && u.mobile.includes(q)) ||
+        (u.pass && u.pass.pass_code && u.pass.pass_code.toLowerCase().includes(q)) ||
+        (u.payment && u.payment.utr_number && u.payment.utr_number.toLowerCase().includes(q));
 
-      // Status filter match
-      let matchesStatus = true;
-      if (filter === "pending") {
-        matchesStatus = u.payment && u.payment.status === "pending";
-      } else if (filter === "approved") {
-        matchesStatus = u.payment && u.payment.status === "approved";
-      } else if (filter === "rejected") {
-        matchesStatus = u.payment && u.payment.status === "rejected";
-      } else if (filter === "unpaid") {
-        matchesStatus = !u.payment;
-      }
+      let matchFilter = true;
+      if (filter === "agreed") matchFilter = Boolean(u.consent_agreed);
+      if (filter === "not_agreed") matchFilter = !u.consent_agreed;
+      if (filter === "approved") matchFilter = u.payment && u.payment.status === "approved";
+      if (filter === "pending") matchFilter = u.payment && u.payment.status === "pending";
+      if (filter === "not_paid") matchFilter = !u.payment;
 
-      return matchesSearch && matchesStatus;
+      return matchQuery && matchFilter;
     });
 
     renderUsersTable(filtered);
@@ -652,7 +547,6 @@ function setupSearchAndExport() {
   if (searchInput) searchInput.addEventListener("input", filterUsers);
   if (filterSelect) filterSelect.addEventListener("change", filterUsers);
 
-  // CSV Export Action
   if (exportBtn) {
     exportBtn.addEventListener("click", () => {
       if (allUsersData.length === 0) {
@@ -687,7 +581,7 @@ function setupSearchAndExport() {
   }
 }
 
-// Setup Screenshot Viewer Modal
+// Screenshot Viewer Modal
 function setupScreenshotModal() {
   const modal = document.getElementById("screenshot-modal");
   const modalClose = document.getElementById("screenshot-modal-close");
@@ -695,13 +589,15 @@ function setupScreenshotModal() {
   const modalDownload = document.getElementById("modal-screenshot-download");
 
   window.openScreenshotModal = function (url) {
-    modalImg.src = url;
-    modalDownload.href = url;
-    modal.classList.add("active");
+    if (modalImg) modalImg.src = url;
+    if (modalDownload) modalDownload.href = url;
+    if (modal) modal.classList.add("active");
   };
 
   if (modalClose) {
-    modalClose.addEventListener("click", () => modal.classList.remove("active"));
+    modalClose.addEventListener("click", () => {
+      if (modal) modal.classList.remove("active");
+    });
   }
 }
 
@@ -711,7 +607,6 @@ function setupScreenshotModal() {
 function setupGateScanner() {
   const startBtn = document.getElementById("start-camera-btn");
   const stopBtn = document.getElementById("stop-camera-btn");
-  const resultCard = document.getElementById("scan-result-card");
 
   if (!startBtn) return;
 
@@ -719,9 +614,11 @@ function setupGateScanner() {
     startCameraScanner();
   });
 
-  stopBtn.addEventListener("click", () => {
-    stopCameraScanner();
-  });
+  if (stopBtn) {
+    stopBtn.addEventListener("click", () => {
+      stopCameraScanner();
+    });
+  }
 }
 
 function startCameraScanner() {
@@ -729,7 +626,7 @@ function startCameraScanner() {
   const stopBtn = document.getElementById("stop-camera-btn");
   const resultCard = document.getElementById("scan-result-card");
 
-  resultCard.style.display = "none";
+  if (resultCard) resultCard.style.display = "none";
 
   if (!html5QrCodeScanner) {
     html5QrCodeScanner = new Html5Qrcode("scanner-reader");
@@ -738,14 +635,14 @@ function startCameraScanner() {
   const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
   html5QrCodeScanner.start(
-    { facingMode: "environment" }, // Prefer back camera
+    { facingMode: "environment" },
     config,
     onQrCodeSuccess,
     onQrCodeError
   ).then(() => {
     isScanning = true;
-    startBtn.style.display = "none";
-    stopBtn.style.display = "inline-flex";
+    if (startBtn) startBtn.style.display = "none";
+    if (stopBtn) stopBtn.style.display = "inline-flex";
   }).catch(err => {
     console.error("Camera start error:", err);
     alert("Camera permission denied or camera not accessible: " + err);
@@ -759,139 +656,101 @@ function stopCameraScanner() {
   if (html5QrCodeScanner && isScanning) {
     html5QrCodeScanner.stop().then(() => {
       isScanning = false;
-      startBtn.style.display = "inline-flex";
-      stopBtn.style.display = "none";
+      if (startBtn) startBtn.style.display = "inline-flex";
+      if (stopBtn) stopBtn.style.display = "none";
     }).catch(err => console.error("Camera stop error:", err));
   }
 }
 
 // On QR Scanned at Gate
 async function onQrCodeSuccess(decodedText) {
-  // Pause scanning temporarily to display result
   if (html5QrCodeScanner && isScanning) {
     html5QrCodeScanner.pause();
   }
 
   const resultCard = document.getElementById("scan-result-card");
-  resultCard.style.display = "block";
-  resultCard.innerHTML = `<div style="text-align: center; color: var(--cyan);">🔍 Verifying pass credentials with database...</div>`;
-
-  let passCode = decodedText.trim();
-  // If payload is JSON
-  try {
-    const parsed = JSON.parse(decodedText);
-    if (parsed.pass_code) {
-      passCode = parsed.pass_code;
-    }
-  } catch (e) {
-    // Plain string pass code
+  if (resultCard) {
+    resultCard.style.display = "block";
+    resultCard.innerHTML = `<div style="text-align: center; color: var(--cyan);">🔍 Verifying pass credentials with local database...</div>`;
   }
 
-  const supabase = getSupabase();
-
   try {
-    // 1. Look up pass in database
-    const { data: pass, error: passErr } = await supabase
-      .from("passes")
-      .select("*, profiles(*), payments(*)")
-      .eq("pass_code", passCode)
-      .maybeSingle();
+    const res = await API.checkInPass(decodedText);
+    const pass = res.pass;
+    const student = res.student || {};
+    const payment = res.payment || {};
 
-    if (!pass) {
-      // STATE 3: INVALID PASS
-      playBeep(false);
-      resultCard.style.background = "rgba(245, 158, 11, 0.15)";
-      resultCard.style.border = "2px solid var(--warning)";
-      resultCard.innerHTML = `
-        <div style="font-size: 1.5rem; color: var(--warning); margin-bottom: 0.5rem;">⚠️ UNRECOGNIZED PASS</div>
-        <div style="font-weight: 700; font-size: 1rem; color: var(--text-main);">Pass Code: ${passCode}</div>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">
-          This pass code was not found in the verified database. Do not permit entry.
-        </p>
-        <button class="btn btn-secondary btn-sm" onclick="resumeScanner()" style="margin-top: 1rem;">Scan Next</button>
-      `;
-      return;
-    }
-
-    const student = pass.profiles || {};
-    const payment = pass.payments || {};
-
-    // 2. CHECK IF ALREADY USED
-    if (pass.is_used) {
-      // STATE 2: ALREADY SCANNED / DUPLICATE
-      playBeep(false);
-      resultCard.style.background = "rgba(239, 68, 68, 0.15)";
-      resultCard.style.border = "2px solid var(--error)";
-      resultCard.innerHTML = `
-        <div style="font-size: 1.5rem; color: var(--error); margin-bottom: 0.5rem;">❌ PASS ALREADY USED!</div>
-        <div style="font-weight: 800; font-size: 1.15rem; color: var(--text-main);">${student.full_name || "Student"}</div>
-        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
-          Checked in previously on: <strong>${new Date(pass.scanned_at || Date.now()).toLocaleTimeString()}</strong>
-        </div>
-        <div style="font-size: 0.82rem; color: var(--error); margin-top: 0.5rem; font-weight: 700;">
-          ⚠️ DUPLICATE ENTRY PROHIBITED. Please check student ID card.
-        </div>
-        <button class="btn btn-secondary btn-sm" onclick="resumeScanner()" style="margin-top: 1rem;">Scan Next</button>
-      `;
-      return;
-    }
-
-    // 3. STATE 1: VALID FIRST-TIME SCAN -> GRANT ENTRY
     playBeep(true);
-
-    // Mark as used in database
-    await supabase
-      .from("passes")
-      .update({
-        is_used: true,
-        scanned_at: new Date().toISOString(),
-        scanned_by: CONFIG.ADMIN_EMAIL
-      })
-      .eq("id", pass.id);
-
-    // Auto-refresh the check-in log badge count and table
     loadCheckInLog();
 
-    resultCard.style.background = "rgba(16, 185, 129, 0.15)";
-    resultCard.style.border = "2px solid var(--success)";
-    const entryTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    resultCard.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-        <span class="badge badge-success" style="font-size: 0.8rem;">✓ ACCESS GRANTED</span>
-        <span class="font-mono" style="color: var(--cyan); font-weight: 700;">${pass.pass_code}</span>
-      </div>
-
-      <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
-        <img src="${student.avatar_url || 'assets/avatars/av1.svg'}" alt="Avatar" style="width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success);">
-        <div>
-          <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">${student.full_name || 'Student'}</div>
-          <div style="font-size: 0.82rem; color: var(--text-muted);">${student.email} • +91 ${student.mobile || payment.payment_mobile || ''}</div>
-          <div style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">UTR: ${payment.utr_number || '--'}</div>
+    if (resultCard) {
+      resultCard.style.background = "rgba(16, 185, 129, 0.15)";
+      resultCard.style.border = "2px solid var(--success)";
+      const entryTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      resultCard.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <span class="badge badge-success" style="font-size: 0.8rem;">✓ ACCESS GRANTED</span>
+          <span class="font-mono" style="color: var(--cyan); font-weight: 700;">${pass.pass_code}</span>
         </div>
-      </div>
 
-      <div style="background: var(--bg-surface); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
-        <span style="color: var(--text-muted);">Gender:</span>
-        <span style="color: var(--text-main); text-transform: capitalize; font-weight: 600;">${student.gender || '--'}</span>
-      </div>
-      <div style="background: var(--bg-surface); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
-        <span style="color: var(--text-muted);">Entry Time:</span>
-        <span style="color: var(--success); font-weight: 700;">🕐 ${entryTime}</span>
-      </div>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+          <img src="${student.avatar_url || 'assets/avatars/av1.svg'}" alt="Avatar" style="width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid var(--success);">
+          <div>
+            <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">${student.full_name || 'Student'}</div>
+            <div style="font-size: 0.82rem; color: var(--text-muted);">${student.email} • +91 ${student.mobile || payment.payment_mobile || ''}</div>
+            <div style="font-size: 0.75rem; color: var(--gold); font-weight: 700;">UTR: ${payment.utr_number || '--'}</div>
+          </div>
+        </div>
 
-      <div style="background: var(--bg-surface); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; color: var(--success); text-align: center; font-weight: 700;">
-        🎉 WELCOME TO MCA FRESHERS 2026!
-      </div>
+        <div style="background: var(--bg-surface); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Gender:</span>
+          <span style="color: var(--text-main); text-transform: capitalize; font-weight: 600;">${student.gender || '--'}</span>
+        </div>
+        <div style="background: var(--bg-surface); padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Entry Time:</span>
+          <span style="color: var(--success); font-weight: 700;">🕐 ${entryTime}</span>
+        </div>
 
-      <button class="btn btn-primary btn-sm" onclick="resumeScanner()" style="width: 100%; margin-top: 1rem;">
-        Scan Next Student →
-      </button>
-    `;
+        <div style="background: var(--bg-surface); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; color: var(--success); text-align: center; font-weight: 700;">
+          🎉 WELCOME TO MCA FRESHERS 2026!
+        </div>
+
+        <button class="btn btn-primary btn-sm" onclick="resumeScanner()" style="width: 100%; margin-top: 1rem;">
+          Scan Next Student →
+        </button>
+      `;
+    }
 
   } catch (err) {
+    playBeep(false);
     console.error("Gate scan validation error:", err);
-    resultCard.innerHTML = `<div style="color: var(--error);">Error verifying pass: ${err.message}</div>
-      <button class="btn btn-secondary btn-sm" onclick="resumeScanner()" style="margin-top: 0.5rem;">Resume Scanner</button>`;
+
+    if (resultCard) {
+      if (err.message && err.message.toLowerCase().includes("already")) {
+        resultCard.style.background = "rgba(239, 68, 68, 0.15)";
+        resultCard.style.border = "2px solid var(--error)";
+        resultCard.innerHTML = `
+          <div style="font-size: 1.5rem; color: var(--error); margin-bottom: 0.5rem;">❌ PASS ALREADY USED!</div>
+          <div style="font-size: 0.95rem; color: var(--text-main); margin-top: 0.2rem;">
+            This pass has already been scanned for entry.
+          </div>
+          <div style="font-size: 0.82rem; color: var(--error); margin-top: 0.5rem; font-weight: 700;">
+            ⚠️ DUPLICATE ENTRY PROHIBITED. Please check student ID card.
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="resumeScanner()" style="margin-top: 1rem;">Scan Next</button>
+        `;
+      } else {
+        resultCard.style.background = "rgba(245, 158, 11, 0.15)";
+        resultCard.style.border = "2px solid var(--warning)";
+        resultCard.innerHTML = `
+          <div style="font-size: 1.5rem; color: var(--warning); margin-bottom: 0.5rem;">⚠️ UNRECOGNIZED PASS</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem;">
+            ${err.message || 'This pass code was not found in the verified database. Do not permit entry.'}
+          </p>
+          <button class="btn btn-secondary btn-sm" onclick="resumeScanner()" style="margin-top: 1rem;">Scan Next</button>
+        `;
+      }
+    }
   }
 }
 
@@ -899,16 +758,14 @@ function onQrCodeError(errorMessage) {
   // Ignored in normal scanning loop
 }
 
-// Resume Scanner helper
 window.resumeScanner = function () {
   const resultCard = document.getElementById("scan-result-card");
-  resultCard.style.display = "none";
+  if (resultCard) resultCard.style.display = "none";
   if (html5QrCodeScanner && isScanning) {
     html5QrCodeScanner.resume();
   }
 };
 
-// Audio feedback chime using Web Audio API
 function playBeep(isSuccess = true) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -916,7 +773,7 @@ function playBeep(isSuccess = true) {
     const gain = ctx.createGain();
 
     osc.type = isSuccess ? "sine" : "sawtooth";
-    osc.frequency.setValueAtTime(isSuccess ? 880 : 330, ctx.currentTime); // High pitch for success, low for error
+    osc.frequency.setValueAtTime(isSuccess ? 880 : 330, ctx.currentTime);
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
 
     osc.connect(gain);

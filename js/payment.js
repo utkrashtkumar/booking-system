@@ -4,8 +4,6 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  const supabase = getSupabase();
-
   // Elements
   const paymentForm = document.getElementById("payment-form");
   const utrInput = document.getElementById("payment-utr");
@@ -48,43 +46,38 @@ document.addEventListener("DOMContentLoaded", () => {
       const utr = utrInput.value.trim().toUpperCase();
 
       if (utr.length < 6) {
-        utrDuplicateError.style.display = "none";
-        utrSpinner.style.display = "none";
+        if (utrDuplicateError) utrDuplicateError.style.display = "none";
+        if (utrSpinner) utrSpinner.style.display = "none";
         isUtrDuplicate = false;
-        submitBtn.disabled = false;
+        if (submitBtn) submitBtn.disabled = false;
         return;
       }
 
-      utrSpinner.style.display = "block";
-      utrDuplicateError.style.display = "none";
+      if (utrSpinner) utrSpinner.style.display = "block";
+      if (utrDuplicateError) utrDuplicateError.style.display = "none";
 
       debounceTimeout = setTimeout(async () => {
         try {
-          // Check if UTR exists in payments table
-          const { data: existingPayment, error } = await supabase
-            .from("payments")
-            .select("id, user_id")
-            .eq("utr_number", utr)
-            .maybeSingle();
+          const res = await API.checkUtr(utr);
+          if (utrSpinner) utrSpinner.style.display = "none";
 
-          utrSpinner.style.display = "none";
-
-          if (existingPayment) {
-            // Check if it belongs to current user or someone else
+          if (res.exists) {
             isUtrDuplicate = true;
-            utrDuplicateError.innerHTML = `⚠️ <strong>Transaction ID already exists!</strong> This UTR has already been submitted. Please provide a different, valid Transaction ID.`;
-            utrDuplicateError.style.display = "flex";
-            submitBtn.disabled = true;
+            if (utrDuplicateError) {
+              utrDuplicateError.innerHTML = `⚠️ <strong>Transaction ID already exists!</strong> This UTR has already been submitted. Please provide a different, valid Transaction ID.`;
+              utrDuplicateError.style.display = "flex";
+            }
+            if (submitBtn) submitBtn.disabled = true;
           } else {
             isUtrDuplicate = false;
-            utrDuplicateError.style.display = "none";
-            submitBtn.disabled = false;
+            if (utrDuplicateError) utrDuplicateError.style.display = "none";
+            if (submitBtn) submitBtn.disabled = false;
           }
         } catch (err) {
           console.error("UTR check error:", err);
-          utrSpinner.style.display = "none";
+          if (utrSpinner) utrSpinner.style.display = "none";
         }
-      }, 500); // 500ms debounce
+      }, 450);
     });
   }
 
@@ -96,10 +89,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Screenshot file is too large. Please select an image under 5MB.");
+      if (file.size > 8 * 1024 * 1024) {
+        alert("Screenshot file is too large. Please select an image under 8MB.");
         screenshotInput.value = "";
-        previewBox.style.display = "none";
+        if (previewBox) previewBox.style.display = "none";
         return;
       }
 
@@ -107,8 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        previewImg.src = event.target.result;
-        previewBox.style.display = "block";
+        if (previewImg) previewImg.src = event.target.result;
+        if (previewBox) previewBox.style.display = "block";
       };
       reader.readAsDataURL(file);
     });
@@ -127,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const utr = utrInput.value.trim().toUpperCase();
-      const mobile = document.getElementById("payment-mobile").value.trim();
+      const mobile = document.getElementById("payment-mobile") ? document.getElementById("payment-mobile").value.trim() : "";
 
       if (!utr || utr.length < 6) {
         alert("Please enter a valid Transaction / UTR number.");
@@ -143,105 +136,45 @@ document.addEventListener("DOMContentLoaded", () => {
       submitBtn.innerHTML = `<span>Uploading proof &amp; saving payment...</span>`;
 
       try {
-        // 1. FINAL ATOMIC DUPLICATE CHECK
-        const { data: duplicateCheck } = await supabase
-          .from("payments")
-          .select("id")
-          .eq("utr_number", utr)
-          .maybeSingle();
-
-        if (duplicateCheck) {
+        // Atomic duplicate check
+        const checkRes = await API.checkUtr(utr);
+        if (checkRes.exists) {
           alert("⚠️ Transaction ID already available! Please provide another transaction ID.");
-          utrDuplicateError.textContent = "Transaction ID already available. Please provide another transaction ID.";
-          utrDuplicateError.style.display = "flex";
+          if (utrDuplicateError) {
+            utrDuplicateError.textContent = "Transaction ID already available. Please provide another transaction ID.";
+            utrDuplicateError.style.display = "flex";
+          }
           submitBtn.disabled = false;
           submitBtn.innerHTML = `<span>Submit Payment for Approval</span>`;
           return;
         }
 
-        // 2. UPLOAD SCREENSHOT TO SUPABASE STORAGE
-        const fileExt = uploadedScreenshotFile.name.split('.').pop();
-        const safeFileName = `${currentStudent.id}_${Date.now()}.${fileExt}`;
-        const filePath = `${currentStudent.id}/${safeFileName}`;
+        // Submit via API
+        const result = await API.submitPayment({
+          utrNumber: utr,
+          paymentMobile: mobile,
+          screenshotFile: uploadedScreenshotFile
+        });
 
-        let screenshotUrl = "";
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("screenshots")
-          .upload(filePath, uploadedScreenshotFile, {
-            upsert: true,
-            contentType: uploadedScreenshotFile.type
-          });
-
-        if (uploadError) {
-          console.warn("Storage bucket upload note, falling back to basic link:", uploadError);
-          // If storage bucket isn't created yet or RLS blocks, keep a local identifier
-          screenshotUrl = `storage://screenshots/${filePath}`;
-        } else {
-          const { data: { publicUrl } } = supabase.storage
-            .from("screenshots")
-            .getPublicUrl(filePath);
-          screenshotUrl = publicUrl;
-        }
-
-        // 2.5 ENSURE PROFILE RECORD EXISTS TO SATISFY FOREIGN KEY CONSTRAINT (payments_user_id_fkey)
-        try {
-          await supabase
-            .from("profiles")
-            .upsert({
-              id: currentStudent.id,
-              full_name: (typeof currentProfile !== "undefined" && currentProfile?.full_name) || currentStudent.user_metadata?.full_name || (currentStudent.email ? currentStudent.email.split("@")[0] : "Student"),
-              email: currentStudent.email,
-              mobile: mobile || (typeof currentProfile !== "undefined" && currentProfile?.mobile) || currentStudent.user_metadata?.mobile || null,
-              gender: (typeof currentProfile !== "undefined" && currentProfile?.gender) || currentStudent.user_metadata?.gender || "prefer_not_to_say",
-              avatar_url: (typeof currentProfile !== "undefined" && currentProfile?.avatar_url) || "assets/avatars/av1.svg",
-              avatar_type: "preset",
-              consent_agreed: true
-            }, { onConflict: "id" });
-        } catch (profileSyncErr) {
-          console.warn("Profile sync before payment notice:", profileSyncErr);
-        }
-
-        // 3. INSERT OR UPSERT INTO PAYMENTS TABLE
-        const { data: paymentRecord, error: insertError } = await supabase
-          .from("payments")
-          .upsert({
-            user_id: currentStudent.id,
-            utr_number: utr,
-            amount: 200.00,
-            payment_mobile: mobile,
-            screenshot_url: screenshotUrl,
-            status: "pending",
-            submitted_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (insertError) {
-          throw insertError;
-        }
-
-        currentPayment = paymentRecord;
+        currentPayment = result.payment;
 
         // Reset submit button
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<span>Submit Payment for Approval</span>`;
 
         // Advance to status view
-        updateStepUI();
+        if (typeof updateStepUI === "function") {
+          updateStepUI();
+        }
 
-        // 4. POPUP THE AVATAR / PROFILE PICTURE CUSTOMIZATION MODAL
+        // Popup the avatar / profile picture customization modal
         if (typeof openAvatarModal === "function") {
           openAvatarModal();
         }
 
       } catch (err) {
         console.error("Payment submission error:", err);
-        const errMsg = err.message || "";
-        if (errMsg.includes("payments_user_id_fkey") || errMsg.includes("foreign key")) {
-          alert("⚠️ Database Link Error: Your student profile record was not found in the database. Please run the SQL fix in your Supabase SQL Editor to backfill user profiles and restore the database links.");
-        } else {
-          alert("Error submitting payment: " + (errMsg || "Please check details."));
-        }
+        alert("Error submitting payment: " + (err.message || "Please check details."));
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<span>Submit Payment for Approval</span>`;
       }

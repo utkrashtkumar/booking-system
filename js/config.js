@@ -1,12 +1,14 @@
 /**
  * IET LUCKNOW - MCA FRESHERS 2026 PLATFORM
- * Central Configuration File
+ * Central Configuration & Local API Client
  */
 
 const CONFIG = {
-  // Supabase Project Credentials
-  SUPABASE_URL: "https://nmtbzzbfwoifbxkgfrgr.supabase.co",
-  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tdGJ6emJmd29pZmJ4a2dmcmdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5ODA5MDIsImV4cCI6MjA5OTU1NjkwMn0.ubl5OTVCziqbytRHlKCBiF6nwo-ZV4CI1jBAd08vMuk",
+  // Local Express & SQLite API Server Base URL
+  // Automatically detects if running on port 3000 or loaded statically
+  API_BASE: (window.location.protocol === 'http:' || window.location.protocol === 'https:')
+    ? (window.location.port === '3000' ? '' : 'http://localhost:3000')
+    : 'http://localhost:3000',
 
   // Designated Super Admin
   ADMIN_EMAIL: "utkrashtu@gmail.com",
@@ -76,17 +78,206 @@ const CONFIG = {
   ]
 };
 
-// Initialize Supabase Client
-let supabaseClient = null;
-if (typeof supabase !== "undefined") {
-  supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-} else {
-  console.warn("Supabase SDK not loaded yet. Will initialize once library is ready.");
-}
+// ========================================================
+// UNIFIED LOCAL API CLIENT
+// ========================================================
+const API = {
+  TOKEN_KEY: "freshers_jwt_token",
+  USER_KEY: "freshers_user_profile",
 
-function getSupabase() {
-  if (!supabaseClient && typeof supabase !== "undefined") {
-    supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  getToken() {
+    return localStorage.getItem(this.TOKEN_KEY);
+  },
+
+  setToken(token) {
+    if (token) localStorage.setItem(this.TOKEN_KEY, token);
+    else localStorage.removeItem(this.TOKEN_KEY);
+  },
+
+  getUser() {
+    try {
+      const u = localStorage.getItem(this.USER_KEY);
+      return u ? JSON.parse(u) : null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  setUser(user) {
+    if (user) localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    else localStorage.removeItem(this.USER_KEY);
+  },
+
+  clearSession() {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+  },
+
+  async request(endpoint, options = {}) {
+    const url = `${CONFIG.API_BASE}${endpoint}`;
+    const headers = options.headers || {};
+
+    const token = this.getToken();
+    if (token && !headers['Authorization']) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    try {
+      const res = await fetch(url, { ...options, headers });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || `Server responded with status ${res.status}`);
+      }
+      return data;
+    } catch (err) {
+      if (err.message.includes("Failed to fetch")) {
+        throw new Error("Unable to reach local server. Please ensure 'npm start' is running on http://localhost:3000.");
+      }
+      throw err;
+    }
+  },
+
+  // Auth Methods
+  async checkRegistration(email, mobile) {
+    const params = new URLSearchParams();
+    if (email) params.append("email", email);
+    if (mobile) params.append("mobile", mobile);
+    return await this.request(`/api/auth/check?${params.toString()}`);
+  },
+
+  async signup(payload) {
+    const data = await this.request('/api/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    this.setToken(data.token);
+    this.setUser(data.user);
+    return data;
+  },
+
+  async login(payload) {
+    const data = await this.request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    this.setToken(data.token);
+    this.setUser(data.user);
+    return data;
+  },
+
+  async getSession() {
+    const token = this.getToken();
+    if (!token) return { session: null, user: null };
+
+    try {
+      const data = await this.request('/api/auth/me');
+      this.setUser(data.user);
+      return { session: { token }, user: data.user };
+    } catch (e) {
+      this.clearSession();
+      return { session: null, user: null };
+    }
+  },
+
+  async logout() {
+    this.clearSession();
+  },
+
+  async resetPassword(email, newPassword) {
+    return await this.request('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, newPassword })
+    });
+  },
+
+  // Profile Methods
+  async updateConsent() {
+    const data = await this.request('/api/profile/consent', { method: 'PUT' });
+    this.setUser(data.user);
+    return data;
+  },
+
+  async updateAvatar({ avatarUrl, avatarType, avatarFile }) {
+    if (avatarFile) {
+      const formData = new FormData();
+      formData.append('avatarFile', avatarFile);
+      formData.append('avatarType', 'upload');
+      return await this.request('/api/profile/avatar', {
+        method: 'POST',
+        body: formData
+      });
+    } else {
+      return await this.request('/api/profile/avatar', {
+        method: 'POST',
+        body: JSON.stringify({ avatarUrl, avatarType: avatarType || 'preset' })
+      });
+    }
+  },
+
+  // Payment Methods
+  async checkUtr(utr) {
+    return await this.request(`/api/payments/check-utr?utr=${encodeURIComponent(utr)}`);
+  },
+
+  async getMyPayment() {
+    const data = await this.request('/api/payments/me');
+    return data.payment;
+  },
+
+  async submitPayment({ utrNumber, paymentMobile, screenshotFile, screenshotDataUrl }) {
+    if (screenshotFile) {
+      const formData = new FormData();
+      formData.append('utrNumber', utrNumber);
+      if (paymentMobile) formData.append('paymentMobile', paymentMobile);
+      formData.append('screenshot', screenshotFile);
+      return await this.request('/api/payments', {
+        method: 'POST',
+        body: formData
+      });
+    } else {
+      return await this.request('/api/payments', {
+        method: 'POST',
+        body: JSON.stringify({ utrNumber, paymentMobile, screenshotDataUrl })
+      });
+    }
+  },
+
+  // Pass Methods
+  async getMyPass() {
+    return await this.request('/api/passes/me');
+  },
+
+  // Admin Methods
+  async getAdminData() {
+    return await this.request('/api/admin/data');
+  },
+
+  async approvePayment(paymentId) {
+    return await this.request(`/api/admin/payments/${paymentId}/approve`, {
+      method: 'POST'
+    });
+  },
+
+  async rejectPayment(paymentId, note) {
+    return await this.request(`/api/admin/payments/${paymentId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ note })
+    });
+  },
+
+  async getCheckInLog() {
+    return await this.request('/api/admin/checkin-log');
+  },
+
+  async checkInPass(passCode) {
+    return await this.request('/api/admin/checkin', {
+      method: 'POST',
+      body: JSON.stringify({ passCode })
+    });
   }
-  return supabaseClient;
-}
+};

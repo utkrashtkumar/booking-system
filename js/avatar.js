@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modal.classList.add("active");
       populateAvatarGrid();
       if (currentProfile && currentProfile.avatar_url) {
-        uploadPreview.src = currentProfile.avatar_url;
+        if (uploadPreview) uploadPreview.src = currentProfile.avatar_url;
       }
     }
   };
@@ -64,8 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tabUploadBtn.style.color = "#ffffff";
       tabPresetBtn.style.background = "transparent";
       tabPresetBtn.style.color = "var(--text-muted)";
-      tabUploadContent.style.display = "block";
-      tabPresetContent.style.display = "none";
+      if (tabUploadContent) tabUploadContent.style.display = "block";
+      if (tabPresetContent) tabPresetContent.style.display = "none";
     });
 
     tabPresetBtn.addEventListener("click", () => {
@@ -73,8 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tabPresetBtn.style.color = "#ffffff";
       tabUploadBtn.style.background = "transparent";
       tabUploadBtn.style.color = "var(--text-muted)";
-      tabPresetContent.style.display = "block";
-      tabUploadContent.style.display = "none";
+      if (tabPresetContent) tabPresetContent.style.display = "block";
+      if (tabUploadContent) tabUploadContent.style.display = "none";
       populateAvatarGrid();
     });
   }
@@ -87,8 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const file = e.target.files[0];
       if (!file) return;
 
-      if (file.size > 3 * 1024 * 1024) {
-        alert("Image file size should be less than 3MB.");
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image file size should be less than 5MB.");
         fileInput.value = "";
         return;
       }
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        uploadPreview.src = event.target.result;
+        if (uploadPreview) uploadPreview.src = event.target.result;
         selectedAvatarUrl = event.target.result;
       };
       reader.readAsDataURL(file);
@@ -140,27 +140,25 @@ document.addEventListener("DOMContentLoaded", () => {
         <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${av.name}</div>
       `;
 
-      // Check if this is the currently selected
+      // Check if this is currently selected
       if (currentProfile && currentProfile.avatar_url === av.file) {
         card.style.borderColor = "var(--cyan)";
         card.style.boxShadow = "0 0 15px var(--cyan-glow)";
       }
 
       card.addEventListener("click", () => {
-        // Deselect others
         document.querySelectorAll(".avatar-preset-item").forEach(c => {
           c.style.borderColor = "var(--border-glass)";
           c.style.boxShadow = "none";
         });
 
-        // Select this
         card.style.borderColor = "var(--cyan)";
         card.style.boxShadow = "0 0 15px var(--cyan-glow)";
 
         selectedAvatarUrl = av.file;
         selectedAvatarType = "preset";
         uploadedAvatarFile = null;
-        uploadPreview.src = av.file;
+        if (uploadPreview) uploadPreview.src = av.file;
       });
 
       gridContainer.appendChild(card);
@@ -174,49 +172,20 @@ document.addEventListener("DOMContentLoaded", () => {
       saveBtn.textContent = "Saving to Pass...";
 
       try {
-        const supabase = getSupabase();
-        let finalAvatarUrl = selectedAvatarUrl;
+        const res = await API.updateAvatar({
+          avatarUrl: selectedAvatarUrl,
+          avatarType: selectedAvatarType,
+          avatarFile: uploadedAvatarFile
+        });
 
-        // If user uploaded a custom photo, upload it to Supabase Storage 'avatars'
-        if (selectedAvatarType === "upload" && uploadedAvatarFile) {
-          const fileExt = uploadedAvatarFile.name.split('.').pop();
-          const filePath = `${currentStudent.id}/avatar_${Date.now()}.${fileExt}`;
+        const finalUrl = res.avatarUrl || selectedAvatarUrl;
 
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("avatars")
-            .upload(filePath, uploadedAvatarFile, {
-              upsert: true,
-              contentType: uploadedAvatarFile.type
-            });
-
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from("avatars")
-              .getPublicUrl(filePath);
-            finalAvatarUrl = publicUrl;
-          }
-        }
-
-        // Update profile in database
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({
-            avatar_url: finalAvatarUrl,
-            avatar_type: selectedAvatarType
-          })
-          .eq("id", currentStudent.id);
-
-        if (updateError) {
-          console.warn("Avatar update note:", updateError.message);
-        }
-
-        // Update UI
         if (currentProfile) {
-          currentProfile.avatar_url = finalAvatarUrl;
+          currentProfile.avatar_url = finalUrl;
         }
 
         const navAvatar = document.getElementById("nav-avatar-img");
-        if (navAvatar) navAvatar.src = finalAvatarUrl;
+        if (navAvatar) navAvatar.src = finalUrl;
 
         alert("✅ Profile picture updated successfully! It will appear on your entry pass.");
         closeAvatarModal();

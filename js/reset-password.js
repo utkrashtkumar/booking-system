@@ -1,11 +1,9 @@
 /**
  * IET LUCKNOW - MCA FRESHERS 2026 PLATFORM
- * Password Reset Controller (reset-password.js)
+ * Password Reset Controller (reset-password.js - Local SQLite / Express)
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const supabase = getSupabase();
-
   // Elements
   const alertBox = document.getElementById("reset-alert");
   const requestContainer = document.getElementById("step-request-container");
@@ -22,7 +20,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const confirmNewPassInput = document.getElementById("confirm-new-password");
   const matchError = document.getElementById("new-password-match-error");
 
+  let resetEmailTarget = "";
+
   function showAlert(msg, type = "error") {
+    if (!alertBox) return;
     alertBox.style.display = "block";
     alertBox.textContent = msg;
     if (type === "error") {
@@ -41,15 +42,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function clearAlert() {
+    if (!alertBox) return;
     alertBox.style.display = "none";
     alertBox.textContent = "";
   }
 
   function activateUpdateMode() {
-    requestContainer.style.display = "none";
-    updateContainer.style.display = "block";
-    pageTitle.textContent = "Set New Password";
-    pageSubtitle.textContent = "Create a secure new password for your account";
+    if (requestContainer) requestContainer.style.display = "none";
+    if (updateContainer) updateContainer.style.display = "block";
+    if (pageTitle) pageTitle.textContent = "Set New Password";
+    if (pageSubtitle) pageSubtitle.textContent = "Create a secure new password for your account";
   }
 
   // Real-time password match listener
@@ -66,26 +68,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     confirmNewPassInput.addEventListener("input", checkMatch);
   }
 
-  // 1. Detect if page was loaded via recovery link
-  const hash = window.location.hash;
-  const isRecoveryHash = hash && (hash.includes("type=recovery") || hash.includes("access_token"));
+  // Detect query param
   const urlParams = new URLSearchParams(window.location.search);
-  const isRecoveryQuery = urlParams.get("type") === "recovery";
-
-  if (isRecoveryHash || isRecoveryQuery) {
+  if (urlParams.get("email")) {
+    resetEmailTarget = urlParams.get("email");
     activateUpdateMode();
   }
 
-  // Listen for Supabase PASSWORD_RECOVERY auth event
-  if (supabase) {
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        activateUpdateMode();
-      }
-    });
-  }
-
-  // 2. Handle Request Reset Link Submission
+  // Handle Request Form Submission
   if (requestForm) {
     requestForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -100,38 +90,31 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<span>Sending recovery link...</span>`;
+      submitBtn.innerHTML = `<span>Verifying account...</span>`;
 
       try {
-        if (!supabase) throw new Error("Supabase client is not initialized.");
-
-        // Construct exact redirect URL back to this page
-        const redirectUrl = window.location.origin + window.location.pathname;
-
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: redirectUrl
-        });
-
-        if (error) {
-          throw error;
+        const check = await API.checkRegistration(email, "");
+        if (!check.emailExists && email !== CONFIG.ADMIN_EMAIL.toLowerCase()) {
+          showAlert("No registered account found with this email address.", "error");
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `<span>Send Password Reset Link</span>`;
+          return;
         }
 
-        // Show confirmation screen
-        requestForm.style.display = "none";
-        sentEmailDisplay.textContent = email;
-        requestSuccessBox.style.display = "block";
-        showAlert("Password recovery link sent successfully!", "success");
+        resetEmailTarget = email;
+        activateUpdateMode();
+        showAlert("Please enter your new password below.", "success");
 
       } catch (err) {
         console.error("Reset error:", err);
-        showAlert(err.message || "Could not send reset link. Please try again.", "error");
+        showAlert(err.message || "Could not process request. Please try again.", "error");
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<span>Send Password Reset Link</span>`;
       }
     });
   }
 
-  // 3. Handle Set New Password Submission
+  // Handle Set New Password Submission
   if (updateForm) {
     updateForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -156,31 +139,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
+      if (!resetEmailTarget) {
+        showAlert("Please enter your registered email address first.", "error");
+        requestContainer.style.display = "block";
+        updateContainer.style.display = "none";
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span>Updating password...</span>`;
 
       try {
-        if (!supabase) throw new Error("Supabase client is not initialized.");
+        await API.resetPassword(resetEmailTarget, newPassword);
 
-        const { data, error } = await supabase.auth.updateUser({
-          password: newPassword
-        });
-
-        if (error) throw error;
-
-        // Hide form and show success state
         updateForm.style.display = "none";
-        updateSuccessBox.style.display = "block";
+        if (updateSuccessBox) updateSuccessBox.style.display = "block";
         showAlert("✅ Password updated successfully! Redirecting to login...", "success");
 
-        // Auto-redirect to login after 3 seconds
         setTimeout(() => {
           window.location.href = "auth.html?mode=login";
-        }, 3000);
+        }, 2000);
 
       } catch (err) {
         console.error("Update password error:", err);
-        showAlert(err.message || "Failed to update password. Link may have expired.", "error");
+        showAlert(err.message || "Failed to update password. Please try again.", "error");
         submitBtn.disabled = false;
         submitBtn.innerHTML = `<span>Update Password &amp; Continue</span>`;
       }

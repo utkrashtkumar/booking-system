@@ -4,8 +4,6 @@
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const supabase = getSupabase();
-
   const loadingState = document.getElementById("pass-loading");
   const deniedState = document.getElementById("pass-denied");
   const passWrapper = document.getElementById("pass-content-wrapper");
@@ -22,36 +20,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const qrContainer = document.getElementById("qrcode-container");
   const downloadPngBtn = document.getElementById("download-png-btn");
 
-  if (!supabase) {
-    if (loadingState) loadingState.style.display = "none";
-    if (deniedState) deniedState.style.display = "block";
-    if (deniedReason) deniedReason.textContent = "Supabase SDK not loaded. Please check your internet connection.";
-    return;
-  }
-
   try {
-    // 1. Check Authentication
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !session || !session.user) {
+    // 1. Check Authentication & Fetch Pass
+    const { session, user } = await API.getSession();
+    if (!session || !user) {
       window.location.href = "auth.html?mode=login";
       return;
     }
 
-    const userId = session.user.id;
-
-    // 2. Query Profile (Safe query)
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle();
-
-    // 3. Query Payment
-    const { data: payment, error: paymentError } = await supabase
-      .from("payments")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+    const { pass, profile, payment } = await API.getMyPass();
 
     if (!payment) {
       if (loadingState) loadingState.style.display = "none";
@@ -71,54 +48,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // 4. Query or Generate Pass Record
-    let { data: pass } = await supabase
-      .from("passes")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    // If pass record was not created during approval, create it now safely
     if (!pass) {
-      const generatedCode = `IET-MCA-2026-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const resolvedName = (profile && profile.full_name) || session.user.user_metadata?.full_name || (session.user.email ? session.user.email.split("@")[0] : "Student");
-      const resolvedMobile = (profile && profile.mobile) || payment.payment_mobile || session.user.user_metadata?.mobile || "";
-
-      const qrData = JSON.stringify({
-        event: "MCA_FRESHERS_2026",
-        pass_code: generatedCode,
-        name: resolvedName,
-        email: session.user.email,
-        mobile: resolvedMobile,
-        utr: payment.utr_number
-      });
-
-      try {
-        const { data: newPass, error: createPassError } = await supabase
-          .from("passes")
-          .insert({
-            user_id: userId,
-            payment_id: payment.id,
-            pass_code: generatedCode,
-            qr_payload: qrData,
-            issued_at: new Date().toISOString()
-          })
-          .select()
-          .maybeSingle();
-
-        pass = newPass || {
-          pass_code: generatedCode,
-          qr_payload: qrData,
-          issued_at: new Date().toISOString()
-        };
-      } catch (insertPassErr) {
-        console.warn("Pass insert warning:", insertPassErr);
-        pass = {
-          pass_code: generatedCode,
-          qr_payload: qrData,
-          issued_at: new Date().toISOString()
-        };
-      }
+      if (loadingState) loadingState.style.display = "none";
+      if (deniedState) deniedState.style.display = "block";
+      if (deniedReason) deniedReason.textContent = "Pass is being prepared. Please refresh in a moment.";
+      return;
     }
 
     // 5. Populate Pass UI Safely (Ensures reliable rendering on mobile & desktop)
